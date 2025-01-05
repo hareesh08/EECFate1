@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.foundation:foundation:1.6.0") // For swipe-to-refresh and other utilities
     implementation("androidx.compose.material3:material3:1.0.0") // Material3 components
+    implementation("androidx.compose.material:material:1.4.1")
     implementation("androidx.compose.runtime:runtime:1.6.0")
     implementation("com.google.accompanist:accompanist-pager:0.27.1")
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
