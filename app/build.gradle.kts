@@ -13,15 +13,15 @@ android {
         minSdk = 21
         targetSdk = 35
         versionCode = 5
-        versionName = "5.0.1"
+        versionName = "5.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

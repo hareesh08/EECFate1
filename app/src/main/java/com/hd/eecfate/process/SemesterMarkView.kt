@@ -290,8 +290,8 @@ private fun formatResponse(parsedResponse: Map<String, Any>): String {
 
         if (isLabCourse) {
             // For lab courses, display scores with their respective maximums
-            formattedResponse.append("Internal: $iaScore/$maxIaScore\n")
-            formattedResponse.append("External: $ueScore/$maxUeScore\n")
+            formattedResponse.append("Internal: $iaScore/$maxUeScore\n")
+            formattedResponse.append("External: $ueScore/$maxIaScore\n")
         } else {
             // For regular courses, display scores with their respective maximums
             formattedResponse.append("Internal: $iaScore/$maxIaScore\n")
