@@ -42,7 +42,7 @@ import com.hd.eecfate.R
 fun AppHeader() {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) } // Dropdown visibility state
-    val items = listOf("HOME", "INTERNALS", "SEMESTER", "GPA CALC") // Menu items
+    val items = listOf("HOME", "INTERNALS", "SEMESTER") // Menu items
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("D:\\AndroidStudioPro\\Signs\\HarDev1\\HarDev1.jks")
+            storePassword = "HarDev1"
+            keyAlias = "HarDev1"
+            keyPassword = "HarDev1"
+        }
+    }
     namespace = "com.hd.eecfate"
     compileSdk = 35
 
@@ -65,6 +73,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("org.conscrypt:conscrypt-android:2.5.2")
     implementation("org.openjsse:openjsse:1.1.0")
+    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.appcompat)
     implementation(libs.material) // Core runtime
 
