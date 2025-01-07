@@ -42,7 +42,7 @@ import com.hd.eecfate.R
 fun AppHeader() {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) } // Dropdown visibility state
-    val items = listOf("HOME", "INTERNALS", "SEMESTER") // Menu items
+    val items = listOf("HOME", "INTERNALS", "SEMESTER", "GPA CALCULATOR") // Menu items
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -139,6 +139,13 @@ fun AppHeader() {
                                     Intent(
                                         context,
                                         com.hd.eecfate.process.InternalMarksActivity::class.java
+                                    )
+                                )
+
+                                "GPA" -> context.startActivity(
+                                    Intent(
+                                        context,
+                                        com.hd.eecfate.process.GpaCalculator::class.java
                                     )
                                 )
 

@@ -15,6 +15,7 @@
         <activity android:name=".process.InternalMarksActivity" />
         <activity android:name=".process.HomePage" />
         <activity android:name=".process.SemesterMarkView" />
+        <activity android:name=".process.GpaCalculator" />
         <!-- MainActivity declaration -->
         <activity
             android:name=".MainActivity"
