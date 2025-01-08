@@ -1,11 +1,6 @@
 package com.hd.eecfate.process.gpacalc
 
-data class Course(
-    val subject: String = "",
-    val credits: Int = 0,
-    val grade: String = "O"
-)
-
+// Function to calculate GPA
 fun calculateGPA(courses: List<Course>): Double {
     val gradeToPoints = mapOf(
         "O" to 10.0,
