@@ -145,7 +145,7 @@ fun AppHeader() {
                                 "GPA CALCULATOR" -> context.startActivity(
                                     Intent(
                                         context,
-                                        com.hd.eecfate.process.GpaCalculator::class.java
+                                        com.hd.eecfate.process.FullCalculator::class.java
                                     )
                                 )
 

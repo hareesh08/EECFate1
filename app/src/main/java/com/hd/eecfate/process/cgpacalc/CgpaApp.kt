@@ -1,4 +1,4 @@
-package com.hd.eecfate.process.gpacalc
+package com.hd.eecfate.process.cgpacalc
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +30,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.fatereq.AppHeader
 
+@Composable
+fun CgpaCalculatorScreen() {
+    CgpaApp()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GPAApp() {
-    var courses by remember { mutableStateOf(List(3) { Course() }) }
-    var gpa by remember { mutableStateOf(0.0) }
+fun CgpaApp() {
+    var semesters by remember { mutableStateOf(List(1) { Semester() }) }
+    var cgpa by remember { mutableStateOf(0.0) }
     var showResult by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
@@ -45,8 +50,6 @@ fun GPAApp() {
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.Transparent),
                 title = { AppHeader() }
             )
-
-
         }
     ) { paddingValues ->
         Column(
@@ -57,7 +60,7 @@ fun GPAApp() {
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                text = "GPA Calculator",
+                text = "CGPA Calculator",
                 fontSize = 18.sp,
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 10.dp)
@@ -69,26 +72,26 @@ fun GPAApp() {
                     .fillMaxWidth()
             ) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    itemsIndexed(courses) { index, course ->
-                        CourseRow(
-                            course = course,
-                            onSubjectChange = { subject ->
-                                courses = courses.toMutableList().apply {
-                                    this[index] = this[index].copy(subject = subject)
+                    itemsIndexed(semesters) { index, semester ->
+                        SemesterRow(
+                            semester = semester,
+                            onSemChange = { sem ->
+                                semesters = semesters.toMutableList().apply {
+                                    this[index] = this[index].copy(sem = sem)
+                                }
+                            },
+                            onGpaChange = { gpa ->
+                                semesters = semesters.toMutableList().apply {
+                                    this[index] = this[index].copy(gpa = gpa)
                                 }
                             },
                             onCreditsChange = { credits ->
-                                courses = courses.toMutableList().apply {
+                                semesters = semesters.toMutableList().apply {
                                     this[index] = this[index].copy(credits = credits)
                                 }
                             },
-                            onGradeChange = { grade ->
-                                courses = courses.toMutableList().apply {
-                                    this[index] = this[index].copy(grade = grade)
-                                }
-                            },
                             onDelete = {
-                                courses = courses.toMutableList().apply { removeAt(index) }
+                                semesters = semesters.toMutableList().apply { removeAt(index) }
                             }
                         )
                     }
@@ -98,32 +101,32 @@ fun GPAApp() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { courses = courses + Course() },
+                onClick = { semesters = semesters + Semester() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Course", fontSize = 12.sp, color = Color.Black)
+                Text("Add Semester", fontSize = 12.sp, color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = {
-                    if (courses.any { it.credits <= 0 }) {
+                    if (semesters.any { it.credits <= 0 || it.gpa <= 0 }) {
                         showError = true
                     } else {
-                        gpa = calculateGPA(courses)
+                        cgpa = calculateCGPA(semesters)
                         showResult = true
                         showError = false
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Calculate GPA", fontSize = 12.sp, color = Color.Black)
+                Text("Calculate CGPA", fontSize = 12.sp, color = Color.Black)
             }
 
             if (showError) {
                 Text(
-                    text = "Please enter valid credits for all courses.",
+                    text = "Please enter valid GPA and credits for all semesters.",
                     color = Color.Red,
                     fontSize = 11.sp,
                     modifier = Modifier.padding(top = 4.dp)
@@ -133,7 +136,7 @@ fun GPAApp() {
             if (showResult) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Your GPA is: ${"%.2f".format(gpa)}",
+                    text = "Your CGPA is: ${"%.2f".format(cgpa)}",
                     fontSize = 16.sp,
                     color = Color.Black,
                     modifier = Modifier.padding(top = 8.dp)
@@ -141,7 +144,7 @@ fun GPAApp() {
 
                 Spacer(modifier = Modifier.height(4.dp))
                 LinearProgressIndicator(
-                    progress = { (gpa / 10).toFloat() },
+                    progress = { (cgpa / 10).toFloat() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(4.dp),
@@ -151,8 +154,8 @@ fun GPAApp() {
 
                 Button(
                     onClick = {
-                        courses = List(3) { Course() }
-                        gpa = 0.0
+                        semesters = List(1) { Semester() }
+                        cgpa = 0.0
                         showResult = false
                         showError = false
                     },
