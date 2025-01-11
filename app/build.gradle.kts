@@ -21,7 +21,7 @@ android {
         minSdk = 21
         targetSdk = 35
         versionCode = 5
-        versionName = "5.5.1"
+        versionName = "6.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    //   implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation("androidx.compose.foundation:foundation:1.6.0") // For swipe-to-refresh and other utilities
     implementation("androidx.compose.material3:material3:1.0.0") // Material3 components
     implementation("androidx.compose.material:material:1.4.1")
