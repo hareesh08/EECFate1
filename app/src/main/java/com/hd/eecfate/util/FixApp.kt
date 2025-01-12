@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hd.eecfate.MainActivity
@@ -28,6 +29,13 @@ class FixApp : ComponentActivity() {
         setContent {
             AppScreen(onClearDataAndRestart = { clearAppDataAndRestart() })
         }
+
+
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed() // This will handle finishing the activity
+        finish() // Explicitly call finish() to destroy the activity
     }
 
     // Function to clear data and restart app
@@ -43,7 +51,11 @@ class FixApp : ComponentActivity() {
             restartApp()
 
         } catch (e: Exception) {
-            Toast.makeText(this, "Error clearing app data: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Error clearing app data. Try Manually In Settings: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -96,19 +108,26 @@ fun AppScreen(onClearDataAndRestart: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(100.dp),
         verticalArrangement = Arrangement.Center, // Centers content vertically
         horizontalAlignment = Alignment.CenterHorizontally // Centers content horizontally
     ) {
         // Your content goes here, for example:
-        Text(text = "Welcome to the App!")
-
+        Text(text = "App Won't Working Properly")
         Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Just Click Here")
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Button to clear app data and restart
         Button(onClick = onClearDataAndRestart) {
             Text(text = "Clear Data & Restart App")
         }
+        Spacer(modifier = Modifier.height(50.dp))
+        Text(
+            text = "Try one or two times if not working try manually in settings",
+            textAlign = TextAlign.Center
+        )
     }
 }
 

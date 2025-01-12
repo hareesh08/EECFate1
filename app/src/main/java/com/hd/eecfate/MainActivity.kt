@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
 
     private fun enableEdgeToEdge() {
         // For Android 11 (API 30) and above
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
             windowInsetsController.isAppearanceLightStatusBars = true // Light status bar icons

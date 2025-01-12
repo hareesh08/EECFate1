@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- Allow access to the Downloads/EECFate directory -->
+    <!-- This allows access to the external storage directory -->
+    <external-path
+        name="external_files"
+        path="." />
+
+    <!-- This allows access to the specific folder where your PDF files are stored -->
     <external-files-path
         name="downloads"
         path="Download/EECFate/" />
 </paths>
+
