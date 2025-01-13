@@ -163,13 +163,6 @@ fun AboutDialog(
                         Text("Disclaimer")
                     }
 
-                    // Close Button
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Close")
-                    }
 
                     // Share App Button
                     Button(
