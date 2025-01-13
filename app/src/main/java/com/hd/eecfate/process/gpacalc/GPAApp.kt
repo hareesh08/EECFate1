@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.fatereq.AppHeader
@@ -38,6 +39,19 @@ fun GPAApp() {
     var showResult by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
+    // Get screen width and height in dp
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+
+    // Dynamically adjust font size and spacing based on screen size
+    val isSmallScreen = screenWidth < 360.dp // Consider 360.dp as a threshold for small screens
+
+    val fontSizeTitle = if (isSmallScreen) 16.sp else 18.sp
+    val fontSizeButton = if (isSmallScreen) 12.sp else 14.sp
+    val paddingVertical = if (isSmallScreen) 8.dp else 12.dp
+    val paddingHorizontal = if (isSmallScreen) 8.dp else 12.dp
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -45,27 +59,25 @@ fun GPAApp() {
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.Transparent),
                 title = { AppHeader() }
             )
-
-
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = paddingHorizontal)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = "GPA Calculator",
-                fontSize = 18.sp,
+                fontSize = fontSizeTitle,
                 color = Color.Black,
-                modifier = Modifier.padding(bottom = 10.dp)
+                modifier = Modifier.padding(bottom = paddingVertical)
             )
 
             Box(
                 modifier = Modifier
-                    .heightIn(max = 520.dp)
+                    .heightIn(max = screenHeight * 0.5f) // Adjust max height based on screen size
                     .fillMaxWidth()
             ) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -95,16 +107,16 @@ fun GPAApp() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(paddingVertical))
 
             Button(
                 onClick = { courses = courses + Course() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Course", fontSize = 12.sp, color = Color.Black)
+                Text("Add Course", fontSize = fontSizeButton, color = Color.Black)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(paddingVertical))
 
             Button(
                 onClick = {
@@ -118,7 +130,7 @@ fun GPAApp() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Calculate GPA", fontSize = 12.sp, color = Color.Black)
+                Text("Calculate GPA", fontSize = fontSizeButton, color = Color.Black)
             }
 
             if (showError) {
@@ -131,7 +143,7 @@ fun GPAApp() {
             }
 
             if (showResult) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(paddingVertical))
                 Text(
                     text = "Your GPA is: ${"%.2f".format(gpa)}",
                     fontSize = 16.sp,
@@ -147,7 +159,7 @@ fun GPAApp() {
                         .height(4.dp),
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(paddingVertical))
 
                 Button(
                     onClick = {
@@ -158,7 +170,7 @@ fun GPAApp() {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Reset", fontSize = 12.sp, color = Color.Black)
+                    Text("Reset", fontSize = fontSizeButton, color = Color.Black)
                 }
             }
         }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +45,23 @@ fun CourseRow(
     var isGradeExpanded by remember { mutableStateOf(false) }
     val grades = listOf("O", "A+", "A", "B+", "B", "C", "W", "F", "Ab", "I", "*")
 
+    // Get screen width
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // Dynamically adjust text size and spacing based on screen width
+    val isSmallScreen = screenWidth < 650.dp // Consider screens less than 360dp as small screens
+    val fontSizeLabel = if (isSmallScreen) 10.sp else 11.sp // Smaller font for smaller screens
+    val fontSizeGrade = if (isSmallScreen) 10.sp else 12.sp // Smaller font for smaller screens
+    val fontSizeButton = if (isSmallScreen) 10.sp else 12.sp
+    val paddingHorizontal = if (isSmallScreen) 6.dp else 8.dp // Reduce padding for small screens
+    val paddingVertical = if (isSmallScreen) 2.dp else 4.dp
+
+    // Adjust weight for smaller screens to prevent clumsy layout
+    val subjectWeight = if (isSmallScreen) 1.5f else 2f
+    val creditsWeight = if (isSmallScreen) 1f else 1.2f
+    val gradeWeight = if (isSmallScreen) 1f else 1.2f
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -56,13 +74,13 @@ fun CourseRow(
                 subject = it
                 onSubjectChange(it)
             },
-            label = { Text("Subject", color = Color.Black) },
-            modifier = Modifier.weight(2f),
+            label = { Text("Subject", color = Color.Black, fontSize = fontSizeLabel) },
+            modifier = Modifier.weight(subjectWeight),
             singleLine = true,
             textStyle = LocalTextStyle.current.copy(color = Color.Black)
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(paddingHorizontal))
 
         // Credits TextField
         OutlinedTextField(
@@ -71,21 +89,21 @@ fun CourseRow(
                 credits = it
                 onCreditsChange(it.toIntOrNull() ?: 0)
             },
-            label = { Text("Credits", color = Color.Black) },
+            label = { Text("Credits", color = Color.Black, fontSize = fontSizeLabel) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(creditsWeight),
             singleLine = true,
             textStyle = LocalTextStyle.current.copy(color = Color.Black)
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(paddingHorizontal))
 
         // Grade Dropdown Menu
-        Box(modifier = Modifier.weight(1f)) {
+        Box(modifier = Modifier.weight(gradeWeight)) {
             Column {
                 Text(
                     text = "Grade: $grade",
-                    fontSize = 12.sp,
+                    fontSize = fontSizeLabel,
                     color = Color.Black,
                     modifier = Modifier.padding(bottom = 0.dp)
                 )
@@ -101,10 +119,11 @@ fun CourseRow(
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Select Grade", fontSize = 10.sp, color = Color.Black)
+                    Text("Select Grade", fontSize = fontSizeButton, color = Color.Black)
                 }
             }
 
+            // Grade Dropdown Menu (Make sure this is responsive as well)
             GradeDropdownMenu(
                 expanded = isGradeExpanded,
                 onDismissRequest = { isGradeExpanded = false },
@@ -116,7 +135,7 @@ fun CourseRow(
             )
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(paddingHorizontal))
 
         // Delete Button
         IconButton(onClick = onDelete) {
@@ -128,3 +147,4 @@ fun CourseRow(
         }
     }
 }
+

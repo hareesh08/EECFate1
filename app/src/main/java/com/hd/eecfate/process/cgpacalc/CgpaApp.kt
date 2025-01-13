@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.fatereq.AppHeader
@@ -43,6 +44,20 @@ fun CgpaApp() {
     var showResult by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
+    // Get screen width and height to adjust responsiveness
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // Dynamically adjust text size and padding based on screen width
+    val isSmallScreen = screenWidth < 550.dp // Smaller screen size threshold
+
+    // Adjust font size and paddings based on screen size
+    val fontSizeTitle = if (isSmallScreen) 14.sp else 18.sp
+    val fontSizeButton = if (isSmallScreen) 12.sp else 14.sp
+    val fontSizeResult = if (isSmallScreen) 14.sp else 16.sp
+    val paddingVertical = if (isSmallScreen) 4.dp else 8.dp
+    val paddingHorizontal = if (isSmallScreen) 8.dp else 12.dp
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -55,15 +70,15 @@ fun CgpaApp() {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = paddingHorizontal)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = "CGPA Calculator",
-                fontSize = 18.sp,
+                fontSize = fontSizeTitle,
                 color = Color.Black,
-                modifier = Modifier.padding(bottom = 10.dp)
+                modifier = Modifier.padding(bottom = paddingVertical)
             )
 
             Box(
@@ -98,16 +113,16 @@ fun CgpaApp() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(paddingVertical))
 
             Button(
                 onClick = { semesters = semesters + Semester() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Semester", fontSize = 12.sp, color = Color.Black)
+                Text("Add Semester", fontSize = fontSizeButton, color = Color.Black)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(paddingVertical))
 
             Button(
                 onClick = {
@@ -121,7 +136,7 @@ fun CgpaApp() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Calculate CGPA", fontSize = 12.sp, color = Color.Black)
+                Text("Calculate CGPA", fontSize = fontSizeButton, color = Color.Black)
             }
 
             if (showError) {
@@ -134,12 +149,12 @@ fun CgpaApp() {
             }
 
             if (showResult) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(paddingVertical))
                 Text(
                     text = "Your CGPA is: ${"%.2f".format(cgpa)}",
-                    fontSize = 16.sp,
+                    fontSize = fontSizeResult,
                     color = Color.Black,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = paddingVertical)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -150,7 +165,7 @@ fun CgpaApp() {
                         .height(4.dp),
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(paddingVertical))
 
                 Button(
                     onClick = {
@@ -161,7 +176,7 @@ fun CgpaApp() {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Reset", fontSize = 12.sp, color = Color.Black)
+                    Text("Reset", fontSize = fontSizeButton, color = Color.Black)
                 }
             }
         }

@@ -218,6 +218,14 @@ fun AboutDialog(
                         Text("Share App")
                     }
 
+                    // Close Button
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Close")
+                    }
+
 
                 }
             }
