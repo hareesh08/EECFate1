@@ -37,10 +37,11 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.R
+import com.hd.eecfate.disclaimer.AboutDialog
 
 @Composable
 fun AppHeader() {
-    val context = LocalContext.current
+    val context = LocalContext.current // Get the current context
     var expanded by remember { mutableStateOf(false) } // Dropdown visibility state
     val items = listOf(
         "HOME",
@@ -50,6 +51,8 @@ fun AppHeader() {
         "DOWNLOADS",
         "FIX APP"
     ) // Menu items
+
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -63,7 +66,8 @@ fun AppHeader() {
             modifier = Modifier
                 .size(30.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.2f)),
+                .background(Color.White.copy(alpha = 0.2f))
+                .clickable { showAboutDialog = true },  // Show About Dialog on icon click
             contentAlignment = Alignment.CenterStart
         ) {
             Icon(
@@ -92,7 +96,6 @@ fun AppHeader() {
 
         // Dropdown Menu Button
         Box(
-
             modifier = Modifier
                 .wrapContentWidth()
                 .clickable { expanded = !expanded }
@@ -127,7 +130,6 @@ fun AppHeader() {
                 modifier = Modifier
                     .background(
                         color = Color.White, // Change the background color to white
-                        //shape = MaterialTheme.shapes.medium // Keep the rounded corners
                     )
             ) {
                 items.forEach { item ->
@@ -190,5 +192,14 @@ fun AppHeader() {
                 }
             }
         }
+    }
+
+    // Show the AboutDialog when showAboutDialog is true
+    if (showAboutDialog) {
+        AboutDialog(
+            context = context, // Pass the context here
+            isVisible = showAboutDialog,
+            onDismiss = { showAboutDialog = false } // Correctly close the dialog
+        )
     }
 }

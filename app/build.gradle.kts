@@ -20,8 +20,8 @@ android {
         applicationId = "com.hd.eecfate"
         minSdk = 21
         targetSdk = 35
-        versionCode = 5
-        versionName = "6.0.1"
+        versionCode = 8
+        versionName = "6.7.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

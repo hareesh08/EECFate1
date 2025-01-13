@@ -10,6 +10,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -142,7 +143,9 @@ fun SemesterMarkViewScreen() {
                                 return super.shouldInterceptRequest(view, request)
                             }
                         }
-
+                        Toast.makeText(context, "Downloads Not Available", Toast.LENGTH_SHORT)
+                            .show()
+                        Toast.makeText(context, "Try In HomePage", Toast.LENGTH_SHORT).show()
                         loadUrl("https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/student/scores/universityexam")
                     }
                 }

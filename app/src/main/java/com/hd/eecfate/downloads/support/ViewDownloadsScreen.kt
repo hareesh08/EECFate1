@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +43,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -87,7 +90,6 @@ fun ViewDownloadsScreen(context: Context) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DisplayFiles(files: List<File>, context: Context) {
-    // Declare the mutable state variable to hold the list of files
     val fileList = remember { mutableStateOf(files) }
 
     Scaffold(
@@ -95,40 +97,59 @@ fun DisplayFiles(files: List<File>, context: Context) {
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.Transparent),
-                title = { AppHeader() }
+                title = { AppHeader() },
+                modifier = Modifier.height(52.dp) // Custom height for the app bar
             )
         }
     ) { paddingValues ->
-        if (fileList.value.isEmpty()) {
-            Column(
+
+        Column(
+            modifier = Modifier
+                .padding(paddingValues) // Applying the default padding from Scaffold
+        ) {
+            // Text that explains the file download instructions
+            Text(
+                text = "Please Download Files From Home Page. Don't use any other",
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                color = Color.Red,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "No files found",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 16.dp),
-                contentPadding = paddingValues,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(fileList.value.size) { index ->
-                    val file = fileList.value[index]
-                    FileItemView(
-                        file = file,
-                        onClick = { openFile(context, file) },
-                        onDelete = { deleteFile(context, file, fileList) },
-                        onShare = { shareFile(context, file) }
+                    .fillMaxWidth()
+                    .padding(top = 0.dp, bottom = 4.dp) // Reduced bottom padding to minimize gap
+            )
+
+            // Check if the file list is empty and display message accordingly
+            if (fileList.value.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp), // Reduced padding when no files are found
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No files found",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
                     )
+                }
+            } else {
+                // LazyColumn for displaying files with no extra padding
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentPadding = PaddingValues(0.dp),  // Ensured there’s no extra padding
+                    verticalArrangement = Arrangement.spacedBy(2.dp) // Small space between items
+                ) {
+                    items(fileList.value.size) { index ->
+                        val file = fileList.value[index]
+                        FileItemView(
+                            file = file,
+                            onClick = { openFile(context, file) },
+                            onDelete = { deleteFile(context, file, fileList) },
+                            onShare = { shareFile(context, file) }
+                        )
+                    }
                 }
             }
         }
@@ -141,7 +162,7 @@ fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare:
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(4.dp)  // Reduced padding around the Card
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.elevatedCardElevation(6.dp)
@@ -149,7 +170,7 @@ fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare:
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(8.dp)  // Reduced padding inside the Card
                 .background(Color.White),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -159,28 +180,27 @@ fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare:
                 modifier = Modifier.size(40.dp),
                 tint = Color.Gray
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))  // Reduced spacer width
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = file.name,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))  // Reduced spacer height
                 Text(
                     text = "Size: ${file.length() / 1024} KB",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))  // Reduced spacer height
                 Text(
                     text = "Last Modified: ${getReadableDate(file.lastModified())}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            // Delete and Share Buttons
+            Spacer(modifier = Modifier.width(8.dp))  // Reduced spacer width
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onDelete) {
                     Icon(
@@ -189,7 +209,7 @@ fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare:
                         tint = Color.Black
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))  // Reduced spacer width
                 IconButton(onClick = onShare) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -201,6 +221,7 @@ fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare:
         }
     }
 }
+
 
 fun deleteFile(
     context: Context,

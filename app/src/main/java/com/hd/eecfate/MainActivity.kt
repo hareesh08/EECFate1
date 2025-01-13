@@ -8,10 +8,13 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
+import com.hd.eecfate.disclaimer.ShowDisclaimerIfNeeded
 import com.hd.eecfate.fatereq.SplashScreenWithMainContent
 import com.hd.eecfate.ui.theme.EECFateTheme
 
@@ -25,17 +28,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            EECFateTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
-                    SplashScreenWithMainContent()
+            AppContent()
+        }
+    }
+
+    @Composable
+    private fun AppContent() {
+        EECFateTheme {
+            val context = LocalContext.current
+
+            // Call the disclaimer function within a composable context
+            ShowDisclaimerIfNeeded(
+                context = context,
+                onDisclaimerAccepted = {
+                    // This block runs when the disclaimer is accepted
+                    Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+                        SplashScreenWithMainContent()
+                    }
+                },
+                onDisclaimerDeclined = {
+                    // Handle decline case, for example, close the app or navigate away
+                    // For now, we just finish the activity (close the app)
+                    finish()
                 }
-            }
+            )
         }
     }
 
     private fun enableEdgeToEdge() {
         // For Android 11 (API 30) and above
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
             windowInsetsController.isAppearanceLightStatusBars = true // Light status bar icons
