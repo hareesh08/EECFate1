@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
                     // Handle decline case, for example, close the app or navigate away
                     // For now, we just finish the activity (close the app)
                     finish()
+                    finishAffinity()
                 }
             )
         }

@@ -21,9 +21,10 @@ android {
         minSdk = 21
         targetSdk = 35
         versionCode = 8
-        versionName = "6.9.8"
+        versionName = "7.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
     }
 
     buildTypes {

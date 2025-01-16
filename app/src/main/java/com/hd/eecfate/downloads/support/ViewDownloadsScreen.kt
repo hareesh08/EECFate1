@@ -110,7 +110,7 @@ fun DisplayFiles(files: List<File>, context: Context) {
             // Text that explains the file download instructions
             Text(
                 text = "Please Download Files From Home Page. Don't use any other",
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 8.sp),
                 color = Color.Red,
                 textAlign = TextAlign.Center,
                 modifier = Modifier

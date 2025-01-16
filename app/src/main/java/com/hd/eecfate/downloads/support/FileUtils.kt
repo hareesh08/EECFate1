@@ -47,13 +47,9 @@ fun openFile(context: Context, file: File) {
 
     // Create an Intent to view the file
     val intent = Intent(Intent.ACTION_VIEW).apply {
-        setDataAndType(uri, "application/*")
-        setDataAndType(uri, "application/pdf")  // Use the determined MIME type
+        setDataAndType(uri, mimeType)  // Use the determined MIME type
         flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_GRANT_READ_URI_PERMISSION
     }
-
-    // Log MIME type for debugging (optional)
-    //Log.d("OpenFile", "MIME type: $mimeType")
 
     // Check if there is an app available to handle the file
     if (intent.resolveActivity(context.packageManager) != null) {
@@ -61,6 +57,8 @@ fun openFile(context: Context, file: File) {
         ContextCompat.startActivity(context, intent, null)
     } else {
         // Show a toast if no suitable app is available
-        Toast.makeText(context, "No app available to open the file", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Share With Drive On First Time", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Now View PDF ", Toast.LENGTH_SHORT).show()
     }
 }
+

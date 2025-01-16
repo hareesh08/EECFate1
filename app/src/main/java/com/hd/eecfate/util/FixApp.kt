@@ -10,32 +10,38 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hd.eecfate.MainActivity
 
 class FixApp : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppScreen(onClearDataAndRestart = { clearAppDataAndRestart() })
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AppScreen(onClearDataAndRestart = { clearAppDataAndRestart() })
+                }
+            }
         }
-
-
     }
 
     override fun onBackPressed() {
-        super.onBackPressed() // This will handle finishing the activity
-        finish() // Explicitly call finish() to destroy the activity
+        super.onBackPressed()
+        finish()
     }
 
     // Function to clear data and restart app
@@ -43,18 +49,15 @@ class FixApp : ComponentActivity() {
         try {
             // Clear app data (cache, files, shared preferences)
             clearAppCacheAndFiles()
-
             // Show Toast to notify the user
             Toast.makeText(this, "App data cleared", Toast.LENGTH_SHORT).show()
-
             // Restart the app
             restartApp()
-
         } catch (e: Exception) {
             Toast.makeText(
                 this,
-                "Error clearing app data. Try Manually In Settings: ${e.message}",
-                Toast.LENGTH_SHORT
+                "Error clearing app data. Try manually in settings: ${e.message}",
+                Toast.LENGTH_LONG
             ).show()
         }
     }
@@ -67,28 +70,16 @@ class FixApp : ComponentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
         // Clear internal files directory
         try {
             applicationContext.filesDir.deleteRecursively()
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
         // Clear shared preferences
         try {
             val sharedPrefs = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
             sharedPrefs.edit().clear().apply()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        // Clear database (replace "your_database_name" with the actual database name)
-        try {
-            val dbPath = getDatabasePath("your_database_name")
-            if (dbPath.exists()) {
-                dbPath.delete()
-            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -105,27 +96,40 @@ class FixApp : ComponentActivity() {
 
 @Composable
 fun AppScreen(onClearDataAndRestart: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val padding = if (screenWidthDp > 600) 32.dp else 16.dp
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(100.dp),
-        verticalArrangement = Arrangement.Center, // Centers content vertically
-        horizontalAlignment = Alignment.CenterHorizontally // Centers content horizontally
+            .padding(padding)
+            .safeDrawingPadding(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Your content goes here, for example:
-        Text(text = "App Won't Working Properly")
+        Text(
+            text = "App Won't Work Properly",
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Just Click Here")
-
+        Text(
+            text = "Just Click Here",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(10.dp))
-
-        // Button to clear app data and restart
-        Button(onClick = onClearDataAndRestart) {
+        Button(
+            onClick = onClearDataAndRestart,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(text = "Clear Data & Restart App")
         }
         Spacer(modifier = Modifier.height(50.dp))
         Text(
-            text = "Try one or two times if not working try manually in settings",
+            text = "Try one or two times if not working, try manually in settings",
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
     }
@@ -134,5 +138,9 @@ fun AppScreen(onClearDataAndRestart: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewAppScreen() {
-    AppScreen(onClearDataAndRestart = {})
+    MaterialTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            AppScreen(onClearDataAndRestart = {})
+        }
+    }
 }

@@ -68,6 +68,12 @@ fun AppHeader() {
     val titleFontSize =
         (screenWidth.value * 0.035f).coerceIn(12f, 16f) // Adjust title font size for balance
 
+    // Dynamically adjust the padding for DropdownMenuItems
+    val dynamicItemPadding =
+        (screenWidth.value * 0.05f).coerceAtLeast(8f) // Coerce the result into a Float
+    val finalPadding = dynamicItemPadding.dp // Convert back to Dp
+
+
     // Convert final values back to TextUnit using .sp
     val finalTitleFontSize = titleFontSize.sp
     val finalFontSize = fontSize.sp
@@ -145,7 +151,7 @@ fun AppHeader() {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                offset = DpOffset(x = 50.dp, y = 5.dp),
+                offset = DpOffset(x = 10.dp, y = 5.dp),
                 modifier = Modifier.background(Color.White)
             ) {
                 items.forEach { item ->
@@ -196,12 +202,14 @@ fun AppHeader() {
                                 )
                             }
                         },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dynamicItemPadding.dp),
                         text = {
                             Text(
                                 text = item,
-                                fontSize = 16.sp,
+                                fontSize = finalFontSize,  // Scale font size dynamically
                                 color = Color.Black,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
                     )
@@ -219,4 +227,6 @@ fun AppHeader() {
         )
     }
 }
+
+
 

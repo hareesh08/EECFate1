@@ -66,7 +66,7 @@ fun AboutDialog(
 
                     // App Version
                     Text(
-                        text = "Version 6.9.8",
+                        text = "Version 7.0.0",
                         style = TextStyle(
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -216,6 +216,20 @@ fun AboutDialog(
                             .padding(top = 8.dp)
                     ) {
                         Text("Share App")
+                    }
+
+                    Button(
+                        onClick = {
+                            // Open the link in a web browser
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://drive.google.com/drive/folders/11w9qHN_LgauXNpcOYlr-YM252HvyyN5E?usp=drive_link")
+                            )
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Check For Update")
                     }
 
                     // Close Button

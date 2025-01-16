@@ -1,10 +1,14 @@
 package com.hd.eecfate.disclaimer
 
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -116,19 +120,27 @@ fun DisclaimerDialog(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                // Disclaimer Content
-                Text(
-                    text = DISCLAIMER_TEXT,
-                    style = TextStyle(fontSize = 14.sp),
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+                // Scrollable content
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(bottom = 16.dp)
+                    ) {
+                        // Disclaimer Section
+                        BoldSectionTitle(text = "Disclaimer")
+                        FormattedContentText(text = DISCLAIMER_TEXT)
+                        Spacer(modifier = Modifier.height(32.dp))
 
-                // Privacy Policy Content
-                Text(
-                    text = PRIVACY_POLICY_TEXT,
-                    style = TextStyle(fontSize = 14.sp),
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+                        // Privacy Policy Section
+                        BoldSectionTitle(text = "Privacy Policy")
+                        FormattedContentText(text = PRIVACY_POLICY_TEXT)
+                    }
+                }
 
                 // Accept Button
                 Button(
@@ -140,7 +152,80 @@ fun DisclaimerDialog(
                 ) {
                     Text("Accept")
                 }
+
+
+                val sharedPreferences =
+                    context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+                Button(
+                    onClick = {
+                        sharedPreferences.edit().putBoolean("DISCLAIMER_ACCEPTED", false).apply()
+                        onDisclaimerAccepted()
+                        context.startActivity(
+                            Intent(
+                                context,
+                                com.hd.eecfate.MainActivity::class.java
+                            )
+                        )
+                        Toast.makeText(context, "Disclaimer Declined", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Decline")
+                }
+
             }
         }
     }
+}
+
+@Composable
+private fun FormattedContentText(text: String) {
+    val paragraphs = text.split("\n\n")
+    Column {
+        paragraphs.forEach { paragraph ->
+            if (paragraph.isNotBlank()) {
+                val lines = paragraph.split("\n")
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                    lines.forEach { line ->
+                        if (line.startsWith("**")) {
+                            Text(
+                                text = line.removeSurrounding("**"),
+                                style = TextStyle(
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    lineHeight = 26.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        } else {
+                            Text(
+                                text = line,
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    lineHeight = 24.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f)
+                                ),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoldSectionTitle(text: String) {
+    Text(
+        text = text,
+        style = TextStyle(
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            lineHeight = 32.sp
+        ),
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
 }
