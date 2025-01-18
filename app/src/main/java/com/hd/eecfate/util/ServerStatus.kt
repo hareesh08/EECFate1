@@ -5,18 +5,10 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val GOOD = "Good"
-const val MEDIUM = "Medium"
-const val WEAK = "Weak"
 
-// Define colors for Android UI (Jetpack Compose)
-val GREEN = Color(0xFF4CAF50)  // Green for Good
-val YELLOW = Color(0xFFFFEB3B) // Yellow for Medium
-val RED = Color(0xFFF44336)    // Red for Weak
-val GRAY = Color(0xFF9E9E9E)   // Gray for "Loading..." status
-
+// This is your checkServerLoad function
 fun checkServerLoad(url: String): Pair<String, Color> {
-    var status = WEAK  // Default status
+    var status = "Weak"  // Default status
     var responseTime = 0L
 
     try {
@@ -32,21 +24,20 @@ fun checkServerLoad(url: String): Pair<String, Color> {
         connection.disconnect()
     } catch (e: IOException) {
         // Handle network errors if connection fails
-        status = WEAK
+        status = "Weak"
     }
 
-    // Return the status message along with the corresponding color
     return when (status) {
-        GOOD -> "Status:$GOOD" to GREEN  // Green for Good
-        MEDIUM -> "Status:$MEDIUM" to YELLOW  // Yellow for Medium
-        else -> "Status:$WEAK" to RED  // Red for Weak
+        "Good" -> "Status: Good" to Color(0xFF4CAF50)  // Green for Good
+        "Medium" -> "Status: Medium" to Color(0xFFFFEB3B)  // Yellow for Medium
+        else -> "Status: Weak" to Color(0xFFF44336)  // Red for Weak
     }
 }
 
 fun determineStatus(responseTime: Long): String {
     return when {
-        responseTime < 500 -> GOOD    // Fast response
-        responseTime < 1000 -> MEDIUM // Average response
-        else -> WEAK                 // Slow response
+        responseTime < 500 -> "Good"    // Fast response
+        responseTime < 1000 -> "Medium" // Average response
+        else -> "Weak"                 // Slow response
     }
 }

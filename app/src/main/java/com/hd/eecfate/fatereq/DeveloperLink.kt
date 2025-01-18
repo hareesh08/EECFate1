@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.util.checkServerLoad
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -35,15 +35,17 @@ fun DeveloperLink() {
     // Use LaunchedEffect to run the server check asynchronously
     LaunchedEffect(dhiUrl) {
         // Run the server status check in a background thread
-        launch {
-            // Perform the server check asynchronously
+        while (true) {
+            // Perform the server check asynchronously (on IO dispatcher)
             val (status, color) = withContext(Dispatchers.IO) {
                 checkServerLoad(dhiUrl) // This returns a Pair<String, Color>
             }
-
             // Update the server status and color once the check completes
             serverStatus.value = "       " + status
             serverStatusColor.value = color
+
+            // Delay 1 second before the next check
+            delay(1000)
         }
     }
 

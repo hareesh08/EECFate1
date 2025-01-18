@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -217,6 +218,7 @@ private fun parseResponse(responseBody: String): String {
         val gson = Gson()
         val type = object : TypeToken<Map<String, Any>>() {}.type
         val parsedResponse: Map<String, Any> = gson.fromJson(responseBody, type)
+        Log.d("Parsed Response", parsedResponse.toString())
 
         formatResponse(parsedResponse)
     } catch (e: Exception) {
@@ -271,3 +273,4 @@ private fun formatResponse(parsedResponse: Map<String, Any>): String {
 
     return formattedResponse.toString()
 }
+
