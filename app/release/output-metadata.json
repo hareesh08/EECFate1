@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.hd.eecfate",
+  "applicationId": "com.hd.eecfate.com.hd.eecfate",
   "variantName": "release",
   "elements": [
     {
@@ -12,7 +12,7 @@
       "filters": [],
       "attributes": [],
       "versionCode": 8,
-      "versionName": "7.0.3",
+      "versionName": "7.0.37.0.3",
       "outputFile": "app-release.apk"
     }
   ],
