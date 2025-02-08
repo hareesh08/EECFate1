@@ -50,7 +50,7 @@ fun AppHeader() {
         "SEMESTER",
         "GPA CALCULATOR",
         "DOWNLOADS",
-        "FIX APP"
+        "REFRESH"
     )
     var showAboutDialog by remember { mutableStateOf(false) }
 
@@ -187,7 +187,7 @@ fun AppHeader() {
                                     )
                                 )
 
-                                "FIX APP" -> context.startActivity(
+                                "REFRESH" -> context.startActivity(
                                     Intent(
                                         context,
                                         com.hd.eecfate.util.FixApp::class.java

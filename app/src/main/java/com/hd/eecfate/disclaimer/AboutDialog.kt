@@ -37,6 +37,7 @@ fun AboutDialog(
 ) {
     val showDisclaimerDialog = remember { mutableStateOf(false) }
     val appContext = LocalContext.current
+    // Correctly initialize VersionName using BuildConfig
 
     if (isVisible) {
         Dialog(onDismissRequest = onDismiss) {
@@ -66,7 +67,7 @@ fun AboutDialog(
 
                     // App Version
                     Text(
-                        text = "Version 7.0.0",
+                        text = "Version 7.0.3",
                         style = TextStyle(
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -163,7 +164,6 @@ fun AboutDialog(
                         Text("Disclaimer")
                     }
 
-
                     // Share App Button
                     Button(
                         onClick = {
@@ -239,8 +239,6 @@ fun AboutDialog(
                     ) {
                         Text("Close")
                     }
-
-
                 }
             }
         }

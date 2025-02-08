@@ -3,9 +3,8 @@ package com.hd.eecfate.util
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.webkit.CookieManager
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,16 +26,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hd.eecfate.MainActivity
 
+//class FixApp : ComponentActivity() {
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            MaterialTheme {
+//                Surface(modifier = Modifier.fillMaxSize()) {
+//                    AppScreen(onClearDataAndRestart = { clearAppDataAndRestart() })
+//                }
+//            }
+//        }
+//    }
+
 class FixApp : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    AppScreen(onClearDataAndRestart = { clearAppDataAndRestart() })
-                }
-            }
-        }
+        clearAppDataAndRestart()
     }
 
     override fun onBackPressed() {
@@ -45,20 +50,12 @@ class FixApp : ComponentActivity() {
     }
 
     // Function to clear data and restart app
-    fun clearAppDataAndRestart() {
+    private fun clearAppDataAndRestart() {
         try {
             // Clear app data (cache, files, shared preferences)
             clearAppCacheAndFiles()
-            // Show Toast to notify the user
-            Toast.makeText(this, "App data cleared", Toast.LENGTH_SHORT).show()
-            // Restart the app
             restartApp()
-        } catch (e: Exception) {
-            Toast.makeText(
-                this,
-                "Error clearing app data. Try manually in settings: ${e.message}",
-                Toast.LENGTH_LONG
-            ).show()
+        } catch (_: Exception) {
         }
     }
 
@@ -82,6 +79,11 @@ class FixApp : ComponentActivity() {
             sharedPrefs.edit().clear().apply()
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+        val cookieManager = CookieManager.getInstance()
+        if (cookieManager.acceptCookie()) {
+            cookieManager.removeAllCookies {
+            }
         }
     }
 

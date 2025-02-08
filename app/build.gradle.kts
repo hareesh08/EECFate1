@@ -21,10 +21,13 @@ android {
         minSdk = 21
         targetSdk = 35
         versionCode = 8
-        versionName = "7.0.0"
+        versionName = "7.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
+        signingConfig = signingConfigs.getByName("debug")
+        applicationIdSuffix = "com.hd.eecfate"
+        versionNameSuffix = "7.0.3"
     }
 
     buildTypes {
