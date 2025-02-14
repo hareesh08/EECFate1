@@ -1,17 +1,18 @@
 package com.hd.eecfate.process
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
+import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,10 +36,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowInsetsControllerCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.hd.eecfate.fatereq.AppHeader
@@ -59,6 +62,24 @@ class SemesterMarkView : ComponentActivity() {
             EECFateTheme {
                 SemesterMarkViewScreen()
             }
+        }
+    }
+
+    private fun enableEdgeToEdge() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
+            windowInsetsController.isAppearanceLightStatusBars = true
+            windowInsetsController.isAppearanceLightNavigationBars = true
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+        } else {
+            window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    )
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
         }
     }
 }
@@ -97,42 +118,21 @@ fun SemesterMarkViewScreen() {
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
                     WebView(context).apply {
-                        // Enable debugging to inspect outgoing requests
                         WebView.setWebContentsDebuggingEnabled(true)
 
-                        // Enable JavaScript and DOM Storage
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
 
-                        // Set WebViewClient to capture outgoing requests
                         webViewClient = object : WebViewClient() {
                             override fun shouldInterceptRequest(
                                 view: WebView?,
                                 request: WebResourceRequest?
                             ): WebResourceResponse? {
-                                // Ensure that the request object is not null
                                 val url = request?.url?.toString()
-
-                                // Capture headers
                                 val headers = request?.requestHeaders
 
-                                // Log the URL and headers to console (Logcat)
-                                if (!url.isNullOrEmpty()) {
-                                    Log.d("WebViewRequest", "Captured Dynamic Request URL: $url")
-                                }
-                                if (!headers.isNullOrEmpty()) {
-                                    Log.d("WebViewRequest", "Captured Request Headers: $headers")
-                                }
-
-                                // Check if it's a dynamic request (example: containing "dhiapiserver")
                                 if (!url.isNullOrEmpty() && url.contains("dhiapiserver/api/university-exam/score")) {
-                                    Log.d(
-                                        "WebViewRequest",
-                                        "Captured Dynamic URL with Headers: $url\nHeaders: $headers"
-                                    )
-                                    // Make HTTP request with captured URL and headers
                                     makeHttpRequest(url, headers, context) { responseBody ->
-                                        // Ensure that UI updates are performed on the main thread
                                         Handler(Looper.getMainLooper()).post {
                                             dialogMessage = parseResponse(responseBody)
                                             showDialog = true
@@ -140,12 +140,12 @@ fun SemesterMarkViewScreen() {
                                     }
                                 }
 
-                                // Allow the request to load normally
                                 return super.shouldInterceptRequest(view, request)
                             }
                         }
-
-                        // Load the target URL
+                        Toast.makeText(context, "Downloads Not Available", Toast.LENGTH_SHORT)
+                            .show()
+                        Toast.makeText(context, "Try In HomePage", Toast.LENGTH_SHORT).show()
                         loadUrl("https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/student/scores/universityexam")
                     }
                 }
@@ -158,12 +158,11 @@ fun SemesterMarkViewScreen() {
                 onDismissRequest = { showDialog = false },
                 title = { Text("University Marks") },
                 text = {
-                    // Scrollable content inside the dialog
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 400.dp) // Adjust height as needed
-                            .verticalScroll(rememberScrollState()) // Ensure it scrolls
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         Text(
                             text = dialogMessage,
@@ -189,60 +188,37 @@ private fun makeHttpRequest(
     context: Context,
     callback: (String) -> Unit
 ) {
-    // Create OkHttpClient
     val client = OkHttpClient()
-
-    // Build the request
     val requestBuilder = Request.Builder().url(url)
 
-    // Add headers if available
     headers?.forEach { (key, value) ->
         requestBuilder.addHeader(key, value)
     }
 
     val request = requestBuilder.build()
 
-    // Make asynchronous request
     client.newCall(request).enqueue(object : Callback {
         override fun onFailure(call: Call, e: IOException) {
-            // Handle failure (e.g., network error)
-            Log.e("HTTP Request", "Failed to fetch data: ${e.message}")
-            e.printStackTrace()
-            // Optionally, update the UI to show an error message
             Handler(Looper.getMainLooper()).post {
                 callback("Error fetching data: ${e.message}")
             }
         }
 
         override fun onResponse(call: Call, response: Response) {
-            if (response.isSuccessful) {
-                // Get the response body
-                val responseBody = response.body?.string() ?: "No response body"
-
-                // Log the response for debugging
-                Log.d("HTTP Response", "Response Body: $responseBody")
-
-                // Parse the response and display it in the dialog
-                callback(responseBody)
-            } else {
-                Log.e("HTTP Response", "Unsuccessful response: ${response.code}")
-                Handler(Looper.getMainLooper()).post {
-                    callback("Error: Unsuccessful response with code ${response.code}")
-                }
-            }
+            val responseBody = response.body?.string() ?: "No response body"
+            callback(responseBody)
         }
     })
 }
 
 // A generic function to parse any JSON response dynamically
 private fun parseResponse(responseBody: String): String {
-    // Use Gson or any other JSON parsing library to parse the response
     return try {
         val gson = Gson()
         val type = object : TypeToken<Map<String, Any>>() {}.type
         val parsedResponse: Map<String, Any> = gson.fromJson(responseBody, type)
+        //Log.d("Parsed Response", parsedResponse.toString())
 
-        // Format the parsed response into a readable string
         formatResponse(parsedResponse)
     } catch (e: Exception) {
         "Error parsing response: ${e.message}"
@@ -253,23 +229,19 @@ private fun parseResponse(responseBody: String): String {
 private fun formatResponse(parsedResponse: Map<String, Any>): String {
     val formattedResponse = StringBuilder()
 
-    // Extract top-level fields with safe casting and default values
     val studentName = parsedResponse["studentName"] as? String ?: "N/A"
     val usn = parsedResponse["usn"] as? String ?: "N/A"
     val summary = parsedResponse["summary"] as? Map<*, *> ?: emptyMap<Any, Any>()
     val percentage = summary["percentage"] as? String ?: "N/A"
     val resultFullForm = summary["resultFullForm"] as? String ?: "N/A"
 
-    // Append top-level information
     formattedResponse.append("Name: $studentName\n")
     formattedResponse.append("Reg NO: $usn\n")
     formattedResponse.append("GPA: $percentage\n")
     formattedResponse.append("Result: $resultFullForm\n")
 
-    // Handle courses
     val ueScoreGraph = parsedResponse["ueScoreGraph"] as? List<Map<String, Any>>
     ueScoreGraph?.forEach { course ->
-        // Safely extract course details with default values
         val courseCodeRaw = course["courseCode"] as? String ?: ""
         val courseCode = courseCodeRaw.trim()
 
@@ -281,19 +253,15 @@ private fun formatResponse(parsedResponse: Map<String, Any>): String {
         val totalScore = course["totalScore"] as? String ?: "N/A"
         val result = course["result"] as? String ?: "N/A"
 
-        // Determine if the course is a lab course
         val isLabCourse = courseCode.endsWith("L", ignoreCase = true)
 
-        // Append course information
         formattedResponse.append("\nCourse Code: $courseCode\n")
         formattedResponse.append("Course Name: $courseName\n")
 
         if (isLabCourse) {
-            // For lab courses, display scores with their respective maximums
-            formattedResponse.append("Internal: $iaScore/$maxIaScore\n")
-            formattedResponse.append("External: $ueScore/$maxUeScore\n")
+            formattedResponse.append("Internal: $iaScore/$maxUeScore\n")
+            formattedResponse.append("External: $ueScore/$maxIaScore\n")
         } else {
-            // For regular courses, display scores with their respective maximums
             formattedResponse.append("Internal: $iaScore/$maxIaScore\n")
             formattedResponse.append("External: $ueScore/$maxUeScore\n")
         }
@@ -304,3 +272,4 @@ private fun formatResponse(parsedResponse: Map<String, Any>): String {
 
     return formattedResponse.toString()
 }
+

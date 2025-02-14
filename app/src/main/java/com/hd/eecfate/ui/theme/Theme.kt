@@ -10,6 +10,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+//import com.hd.eecfate.process.GPAApp
+
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
@@ -51,6 +53,20 @@ fun EECFateTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
+}
+
+@Composable
+fun EEcfateGPAAppTheme(
+    darkTheme: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val colors = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    MaterialTheme(
+        colorScheme = colors,
         typography = Typography,
         content = content
     )

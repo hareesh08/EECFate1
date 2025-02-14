@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("D:\\AndroidStudioPro\\Signs\\HarDev1\\HarDev1.jks")
+            storePassword = "HarDev1"
+            keyAlias = "HarDev1"
+            keyPassword = "HarDev1"
+        }
+    }
     namespace = "com.hd.eecfate"
     compileSdk = 35
 
@@ -12,16 +20,20 @@ android {
         applicationId = "com.hd.eecfate"
         minSdk = 21
         targetSdk = 35
-        versionCode = 5
-        versionName = "5.0.1"
+        versionCode = 8
+        versionName = "7.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
+        signingConfig = signingConfigs.getByName("debug")
+        applicationIdSuffix = "com.hd.eecfate"
+        versionNameSuffix = "7.0.3"
     }
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -54,8 +66,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    //   implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation("androidx.compose.foundation:foundation:1.6.0") // For swipe-to-refresh and other utilities
     implementation("androidx.compose.material3:material3:1.0.0") // Material3 components
+    implementation("androidx.compose.material:material:1.4.1")
     implementation("androidx.compose.runtime:runtime:1.6.0")
     implementation("com.google.accompanist:accompanist-pager:0.27.1")
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
@@ -64,6 +78,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("org.conscrypt:conscrypt-android:2.5.2")
     implementation("org.openjsse:openjsse:1.1.0")
+    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.appcompat)
     implementation(libs.material) // Core runtime
 

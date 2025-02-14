@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -37,74 +38,111 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.R
+import com.hd.eecfate.disclaimer.AboutDialog
 
 @Composable
 fun AppHeader() {
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) } // Dropdown visibility state
-    val items = listOf("HOME", "INTERNALS", "SEMESTER") // Menu items
+    var expanded by remember { mutableStateOf(false) }
+    val items = listOf(
+        "HOME",
+        "INTERNALS",
+        "SEMESTER",
+        "GPA CALCULATOR",
+        "DOWNLOADS",
+        "REFRESH"
+    )
+    var showAboutDialog by remember { mutableStateOf(false) }
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // Dynamically adjust UI elements based on screen width
+    val iconSize = (screenWidth.value * 0.07f).coerceIn(
+        35f,
+        45f
+    ) // Dynamically adjust icon size based on screen size
+    val fontSize = (screenWidth.value * 0.04f).coerceIn(10f, 16f) // Dynamically adjust font size
+    val menuPadding =
+        (screenWidth.value * 0.04f).coerceIn(8f, 16f) // Adjust menu padding based on screen size
+    val titleFontSize =
+        (screenWidth.value * 0.035f).coerceIn(12f, 16f) // Adjust title font size for balance
+
+    // Dynamically adjust the padding for DropdownMenuItems
+    val dynamicItemPadding =
+        (screenWidth.value * 0.05f).coerceAtLeast(8f) // Coerce the result into a Float
+    val finalPadding = dynamicItemPadding.dp // Convert back to Dp
+
+
+    // Convert final values back to TextUnit using .sp
+    val finalTitleFontSize = titleFontSize.sp
+    val finalFontSize = fontSize.sp
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.SpaceBetween, // Ensure sections are spaced well
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .wrapContentHeight()
     ) {
-        Box(
-            modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.CenterStart
+        // Left Section: Contains the app icon and title
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.wrapContentWidth() // Ensures left section doesn't take unnecessary space
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_app_icon),
-                contentDescription = "App Icon",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(30.dp)
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.2f))
+                    .clickable { showAboutDialog = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_app_icon),
+                    contentDescription = "App Icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(iconSize.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(5.dp)) // Reduced spacing
+
+            // Title Section: EECFate text
+            Text(
+                text = "EECFate",
+                maxLines = 1,
+                fontSize = finalTitleFontSize,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
 
-        Spacer(modifier = Modifier.width(5.dp))
+        // Center Section: Contains the DeveloperLink component and occupies more space
+        DeveloperLink() // The center section takes up the available space
 
-        Text(
-            text = "EECFate",
-            maxLines = 2,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            fontFamily = FontFamily.SansSerif,
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-        )
-
-        DeveloperLink()
-
-        // Dropdown Menu Button
+        // Right Section: Contains a menu button
         Box(
-
             modifier = Modifier
                 .wrapContentWidth()
                 .clickable { expanded = !expanded }
-                .padding(horizontal = 28.dp),
-            contentAlignment = Alignment.CenterEnd // Aligns the button content to the end
+                .padding(horizontal = menuPadding.dp),
+            contentAlignment = Alignment.CenterEnd
         ) {
-            // Row for the Menu Icon and Text
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Filled.Menu, // Use Menu icon
+                    imageVector = Icons.Filled.Menu,
                     contentDescription = "Menu",
                     modifier = Modifier.size(20.dp),
                     tint = Color.Black
                 )
-                Spacer(modifier = Modifier.width(4.dp)) // Space between icon and text
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Menu", // Visible "Menu" text
-                    fontSize = 16.sp,
-                    color = Color.Black, // Match your app theme
+                    text = "Menu",
+                    fontSize = finalFontSize,
+                    color = Color.Black,
                     maxLines = 1
                 )
             }
@@ -113,20 +151,13 @@ fun AppHeader() {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                offset = DpOffset(
-                    x = 50.dp,
-                    y = 5.dp
-                ), // Adjust the vertical offset for proper alignment
-                modifier = Modifier
-                    .background(
-                        color = Color.White, // Change the background color to white
-                        //shape = MaterialTheme.shapes.medium // Keep the rounded corners
-                    )
+                offset = DpOffset(x = 10.dp, y = 5.dp),
+                modifier = Modifier.background(Color.White)
             ) {
                 items.forEach { item ->
                     DropdownMenuItem(
                         onClick = {
-                            expanded = false // Close menu on click
+                            expanded = false
                             when (item) {
                                 "SEMESTER" -> context.startActivity(
                                     Intent(
@@ -142,6 +173,27 @@ fun AppHeader() {
                                     )
                                 )
 
+                                "GPA CALCULATOR" -> context.startActivity(
+                                    Intent(
+                                        context,
+                                        com.hd.eecfate.process.FullCalculator::class.java
+                                    )
+                                )
+
+                                "DOWNLOADS" -> context.startActivity(
+                                    Intent(
+                                        context,
+                                        com.hd.eecfate.downloads.ViewDownloadsActivity::class.java
+                                    )
+                                )
+
+                                "REFRESH" -> context.startActivity(
+                                    Intent(
+                                        context,
+                                        com.hd.eecfate.util.FixApp::class.java
+                                    )
+                                )
+
                                 "HOME" -> context.startActivity(
                                     Intent(
                                         context,
@@ -150,17 +202,31 @@ fun AppHeader() {
                                 )
                             }
                         },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dynamicItemPadding.dp),
                         text = {
                             Text(
                                 text = item,
-                                fontSize = 16.sp,
+                                fontSize = finalFontSize,  // Scale font size dynamically
                                 color = Color.Black,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
-                        },
+                        }
                     )
                 }
             }
         }
     }
+
+    // Show the AboutDialog when showAboutDialog is true
+    if (showAboutDialog) {
+        AboutDialog(
+            context = context,
+            isVisible = showAboutDialog,
+            onDismiss = { showAboutDialog = false }
+        )
+    }
 }
+
+
+
