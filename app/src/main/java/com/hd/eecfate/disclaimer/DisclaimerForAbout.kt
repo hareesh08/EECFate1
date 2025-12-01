@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,6 +91,54 @@ fun DisclaimerDialog(
         • For further inquiries or concerns, please contact us at: hareeshcode020@yahoo.com
         """.trimIndent()
 
+    // Get screen configuration for responsive design
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+    val isSmallScreen = screenWidth < 360.dp || screenHeight < 640.dp
+    val isMediumScreen = screenWidth < 600.dp
+
+    // Responsive values
+    val dialogWidthFraction = when {
+        isSmallScreen -> 0.95f
+        isMediumScreen -> 0.92f
+        else -> 0.9f
+    }
+    val dialogHeightFraction = when {
+        isSmallScreen -> 0.9f
+        isMediumScreen -> 0.85f
+        else -> 0.8f
+    }
+    val outerPadding = when {
+        isSmallScreen -> 8.dp
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    val innerPadding = when {
+        isSmallScreen -> 12.dp
+        isMediumScreen -> 16.dp
+        else -> 24.dp
+    }
+    val titleFontSize = when {
+        isSmallScreen -> 18.sp
+        isMediumScreen -> 20.sp
+        else -> 24.sp
+    }
+    val titleBottomPadding = when {
+        isSmallScreen -> 8.dp
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    val buttonHeight = when {
+        isSmallScreen -> 44.dp
+        isMediumScreen -> 48.dp
+        else -> 56.dp
+    }
+    val buttonSpacing = when {
+        isSmallScreen -> 6.dp
+        else -> 8.dp
+    }
+
     Dialog(
         onDismissRequest = {
             // Dialog dismiss behavior, optional
@@ -97,15 +146,15 @@ fun DisclaimerDialog(
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.8f)
-                .padding(16.dp),
+                .fillMaxWidth(dialogWidthFraction)
+                .fillMaxHeight(dialogHeightFraction)
+                .padding(outerPadding),
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
-                    .padding(24.dp)
+                    .padding(innerPadding)
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -113,11 +162,11 @@ fun DisclaimerDialog(
                 Text(
                     text = "Disclaimer & Privacy Policy",
                     style = TextStyle(
-                        fontSize = 24.sp,
+                        fontSize = titleFontSize,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     ),
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = titleBottomPadding)
                 )
 
                 // Scrollable content
@@ -129,16 +178,16 @@ fun DisclaimerDialog(
                     Column(
                         modifier = Modifier
                             .verticalScroll(rememberScrollState())
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = if (isSmallScreen) 8.dp else 16.dp)
                     ) {
                         // Disclaimer Section
-                        BoldSectionTitle(text = "Disclaimer")
-                        FormattedContentText(text = DISCLAIMER_TEXT)
-                        Spacer(modifier = Modifier.height(32.dp))
+                        BoldSectionTitle(text = "Disclaimer", isSmallScreen = isSmallScreen, isMediumScreen = isMediumScreen)
+                        FormattedContentText(text = DISCLAIMER_TEXT, isSmallScreen = isSmallScreen, isMediumScreen = isMediumScreen)
+                        Spacer(modifier = Modifier.height(if (isSmallScreen) 16.dp else if (isMediumScreen) 24.dp else 32.dp))
 
                         // Privacy Policy Section
-                        BoldSectionTitle(text = "Privacy Policy")
-                        FormattedContentText(text = PRIVACY_POLICY_TEXT)
+                        BoldSectionTitle(text = "Privacy Policy", isSmallScreen = isSmallScreen, isMediumScreen = isMediumScreen)
+                        FormattedContentText(text = PRIVACY_POLICY_TEXT, isSmallScreen = isSmallScreen, isMediumScreen = isMediumScreen)
                     }
                 }
 
@@ -148,7 +197,10 @@ fun DisclaimerDialog(
                         onDisclaimerAccepted()
                         Toast.makeText(context, "Disclaimer Accepted", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(buttonHeight)
+                        .padding(bottom = buttonSpacing)
                 ) {
                     Text("Accept")
                 }
@@ -168,7 +220,9 @@ fun DisclaimerDialog(
                         )
                         Toast.makeText(context, "Disclaimer Declined", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(buttonHeight)
                 ) {
                     Text("Decline")
                 }
@@ -179,34 +233,54 @@ fun DisclaimerDialog(
 }
 
 @Composable
-private fun FormattedContentText(text: String) {
+private fun FormattedContentText(text: String, isSmallScreen: Boolean, isMediumScreen: Boolean) {
+    val boldFontSize = when {
+        isSmallScreen -> 14.sp
+        isMediumScreen -> 16.sp
+        else -> 18.sp
+    }
+    val normalFontSize = when {
+        isSmallScreen -> 12.sp
+        isMediumScreen -> 14.sp
+        else -> 16.sp
+    }
+    val paragraphBottomPadding = when {
+        isSmallScreen -> 8.dp
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    val lineBottomPadding = when {
+        isSmallScreen -> 6.dp
+        else -> 8.dp
+    }
+    
     val paragraphs = text.split("\n\n")
     Column {
         paragraphs.forEach { paragraph ->
             if (paragraph.isNotBlank()) {
                 val lines = paragraph.split("\n")
-                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                Column(modifier = Modifier.padding(bottom = paragraphBottomPadding)) {
                     lines.forEach { line ->
                         if (line.startsWith("**")) {
                             Text(
                                 text = line.removeSurrounding("**"),
                                 style = TextStyle(
-                                    fontSize = 18.sp,
+                                    fontSize = boldFontSize,
                                     fontWeight = FontWeight.Bold,
-                                    lineHeight = 26.sp,
+                                    lineHeight = boldFontSize * 1.4f,
                                     color = MaterialTheme.colorScheme.onSurface
                                 ),
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                modifier = Modifier.padding(bottom = lineBottomPadding)
                             )
                         } else {
                             Text(
                                 text = line,
                                 style = TextStyle(
-                                    fontSize = 16.sp,
-                                    lineHeight = 24.sp,
+                                    fontSize = normalFontSize,
+                                    lineHeight = normalFontSize * 1.5f,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f)
                                 ),
-                                modifier = Modifier.padding(bottom = 4.dp)
+                                modifier = Modifier.padding(bottom = if (isSmallScreen) 2.dp else 4.dp)
                             )
                         }
                     }
@@ -217,15 +291,26 @@ private fun FormattedContentText(text: String) {
 }
 
 @Composable
-private fun BoldSectionTitle(text: String) {
+private fun BoldSectionTitle(text: String, isSmallScreen: Boolean, isMediumScreen: Boolean) {
+    val fontSize = when {
+        isSmallScreen -> 16.sp
+        isMediumScreen -> 18.sp
+        else -> 24.sp
+    }
+    val bottomPadding = when {
+        isSmallScreen -> 8.dp
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    
     Text(
         text = text,
         style = TextStyle(
-            fontSize = 24.sp,
+            fontSize = fontSize,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            lineHeight = 32.sp
+            lineHeight = fontSize * 1.3f
         ),
-        modifier = Modifier.padding(bottom = 16.dp)
+        modifier = Modifier.padding(bottom = bottomPadding)
     )
 }

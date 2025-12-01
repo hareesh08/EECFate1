@@ -56,34 +56,61 @@ fun AppHeader() {
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
 
-    // Dynamically adjust UI elements based on screen width
-    val iconSize = (screenWidth.value * 0.07f).coerceIn(
-        35f,
-        45f
-    ) // Dynamically adjust icon size based on screen size
-    val fontSize = (screenWidth.value * 0.04f).coerceIn(10f, 16f) // Dynamically adjust font size
-    val menuPadding =
-        (screenWidth.value * 0.04f).coerceIn(8f, 16f) // Adjust menu padding based on screen size
-    val titleFontSize =
-        (screenWidth.value * 0.035f).coerceIn(12f, 16f) // Adjust title font size for balance
-
-    // Dynamically adjust the padding for DropdownMenuItems
-    val dynamicItemPadding =
-        (screenWidth.value * 0.05f).coerceAtLeast(8f) // Coerce the result into a Float
-    val finalPadding = dynamicItemPadding.dp // Convert back to Dp
-
-
-    // Convert final values back to TextUnit using .sp
-    val finalTitleFontSize = titleFontSize.sp
-    val finalFontSize = fontSize.sp
+    // Dynamically adjust UI elements based on screen width and height
+    val iconSize = when {
+        screenWidth < 360.dp -> 32.dp
+        screenWidth < 480.dp -> 38.dp
+        screenWidth < 600.dp -> 42.dp
+        else -> 48.dp
+    }
+    
+    val titleFontSize = when {
+        screenWidth < 360.dp -> 14.sp
+        screenWidth < 480.dp -> 16.sp
+        screenWidth < 600.dp -> 18.sp
+        else -> 20.sp
+    }
+    
+    val fontSize = when {
+        screenWidth < 360.dp -> 11.sp
+        screenWidth < 480.dp -> 13.sp
+        screenWidth < 600.dp -> 14.sp
+        else -> 16.sp
+    }
+    
+    val menuIconSize = when {
+        screenWidth < 360.dp -> 18.dp
+        screenWidth < 480.dp -> 20.dp
+        else -> 24.dp
+    }
+    
+    val horizontalPadding = when {
+        screenWidth < 360.dp -> 4.dp
+        screenWidth < 480.dp -> 6.dp
+        screenWidth < 600.dp -> 8.dp
+        else -> 12.dp
+    }
+    
+    val spacerWidth = when {
+        screenWidth < 360.dp -> 4.dp
+        screenWidth < 480.dp -> 6.dp
+        else -> 8.dp
+    }
+    
+    val dropdownItemPadding = when {
+        screenWidth < 360.dp -> 8.dp
+        screenWidth < 480.dp -> 12.dp
+        else -> 16.dp
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween, // Ensure sections are spaced well
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 5.dp)
+            .padding(horizontal = horizontalPadding, vertical = 8.dp)
             .wrapContentHeight()
     ) {
         // Left Section: Contains the app icon and title
@@ -102,17 +129,17 @@ fun AppHeader() {
                     painter = painterResource(id = R.drawable.ic_app_icon),
                     contentDescription = "App Icon",
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(iconSize.dp)
+                    modifier = Modifier.size(iconSize)
                 )
             }
 
-            Spacer(modifier = Modifier.width(5.dp)) // Reduced spacing
+            Spacer(modifier = Modifier.width(spacerWidth))
 
             // Title Section: EECFate text
             Text(
                 text = "EECFate",
                 maxLines = 1,
-                fontSize = finalTitleFontSize,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
                 fontFamily = FontFamily.SansSerif,
@@ -128,20 +155,20 @@ fun AppHeader() {
             modifier = Modifier
                 .wrapContentWidth()
                 .clickable { expanded = !expanded }
-                .padding(horizontal = menuPadding.dp),
+                .padding(horizontal = horizontalPadding),
             contentAlignment = Alignment.CenterEnd
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = "Menu",
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(menuIconSize),
                     tint = Color.Black
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(spacerWidth))
                 Text(
                     text = "Menu",
-                    fontSize = finalFontSize,
+                    fontSize = fontSize,
                     color = Color.Black,
                     maxLines = 1
                 )
@@ -202,14 +229,13 @@ fun AppHeader() {
                                 )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dynamicItemPadding.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         text = {
                             Text(
                                 text = item,
-                                fontSize = finalFontSize,  // Scale font size dynamically
+                                fontSize = fontSize,
                                 color = Color.Black,
+                                modifier = Modifier.padding(horizontal = dropdownItemPadding, vertical = 8.dp)
                             )
                         }
                     )
