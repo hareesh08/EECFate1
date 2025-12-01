@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,6 +31,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hd.eecfate.fatereq.AppHeader
+import com.hd.eecfate.ui.theme.LocalDimensions
+import com.hd.eecfate.util.InputValidator
+import com.hd.eecfate.util.ValidationResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,20 +41,15 @@ fun GPAApp() {
     var courses by remember { mutableStateOf(List(3) { Course() }) }
     var gpa by remember { mutableStateOf(0.0) }
     var showResult by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
+    var courseValidationErrors by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
 
-    // Get screen width and height in dp
+    // Use LocalDimensions for responsive spacing
+    val dimensions = LocalDimensions.current
+    
+    // Get screen height for LazyColumn sizing
     val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
-
-    // Dynamically adjust font size and spacing based on screen size
-    val isSmallScreen = screenWidth < 360.dp // Consider 360.dp as a threshold for small screens
-
-    val fontSizeTitle = if (isSmallScreen) 16.sp else 18.sp
-    val fontSizeButton = if (isSmallScreen) 12.sp else 14.sp
-    val paddingVertical = if (isSmallScreen) 8.dp else 12.dp
-    val paddingHorizontal = if (isSmallScreen) 8.dp else 12.dp
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -64,113 +63,176 @@ fun GPAApp() {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = paddingHorizontal)
+                .padding(horizontal = dimensions.paddingMedium)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = "GPA Calculator",
-                fontSize = fontSizeTitle,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = paddingVertical)
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = dimensions.paddingMedium)
             )
 
             Box(
                 modifier = Modifier
-                    .heightIn(max = screenHeight * 0.5f) // Adjust max height based on screen size
+                    .heightIn(max = screenHeight * 0.5f)
                     .fillMaxWidth()
             ) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    itemsIndexed(courses) { index, course ->
-                        CourseRow(
-                            course = course,
-                            onSubjectChange = { subject ->
-                                courses = courses.toMutableList().apply {
-                                    this[index] = this[index].copy(subject = subject)
+                    itemsIndexed(courses, key = { index, _ -> index }) { index, course ->
+                        Column {
+                            CourseRow(
+                                course = course,
+                                onSubjectChange = { subject ->
+                                    courses = courses.toMutableList().apply {
+                                        this[index] = this[index].copy(subject = subject)
+                                    }
+                                    // Clear validation error for this course when user makes changes
+                                    courseValidationErrors = courseValidationErrors - index
+                                },
+                                onCreditsChange = { credits ->
+                                    courses = courses.toMutableList().apply {
+                                        this[index] = this[index].copy(credits = credits)
+                                    }
+                                    // Clear validation error for this course when user makes changes
+                                    courseValidationErrors = courseValidationErrors - index
+                                },
+                                onGradeChange = { grade ->
+                                    courses = courses.toMutableList().apply {
+                                        this[index] = this[index].copy(grade = grade)
+                                    }
+                                    // Clear validation error for this course when user makes changes
+                                    courseValidationErrors = courseValidationErrors - index
+                                },
+                                onDelete = {
+                                    if (courses.size > 3) {
+                                        courses = courses.toMutableList().apply { removeAt(index) }
+                                        // Remove validation error for deleted course
+                                        courseValidationErrors = courseValidationErrors - index
+                                    }
                                 }
-                            },
-                            onCreditsChange = { credits ->
-                                courses = courses.toMutableList().apply {
-                                    this[index] = this[index].copy(credits = credits)
-                                }
-                            },
-                            onGradeChange = { grade ->
-                                courses = courses.toMutableList().apply {
-                                    this[index] = this[index].copy(grade = grade)
-                                }
-                            },
-                            onDelete = {
-                                courses = courses.toMutableList().apply { removeAt(index) }
+                            )
+                            
+                            // Display inline validation error for this course
+                            courseValidationErrors[index]?.let { error ->
+                                Text(
+                                    text = error,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(
+                                        start = dimensions.paddingMedium,
+                                        top = dimensions.paddingSmall,
+                                        bottom = dimensions.paddingSmall
+                                    )
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(paddingVertical))
+            Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
             Button(
                 onClick = { courses = courses + Course() },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dimensions.minTouchTarget)
             ) {
-                Text("Add Course", fontSize = fontSizeButton, color = Color.Black)
+                Text(
+                    text = "Add Course",
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
 
-            Spacer(modifier = Modifier.height(paddingVertical))
+            Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
             Button(
                 onClick = {
-                    if (courses.any { it.credits <= 0 }) {
-                        showError = true
+                    // Validate all courses before calculation
+                    val errors = mutableMapOf<Int, String>()
+                    var hasError = false
+                    
+                    courses.forEachIndexed { index, course ->
+                        val validationResult = InputValidator.validateCourse(course)
+                        if (validationResult is ValidationResult.Invalid) {
+                            errors[index] = validationResult.message
+                            hasError = true
+                        }
+                    }
+                    
+                    if (hasError) {
+                        courseValidationErrors = errors
+                        validationError = "Please fix the errors in the course entries above."
+                        showResult = false
                     } else {
+                        // All courses are valid, calculate GPA
+                        courseValidationErrors = emptyMap()
+                        validationError = null
                         gpa = calculateGPA(courses)
                         showResult = true
-                        showError = false
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dimensions.minTouchTarget)
             ) {
-                Text("Calculate GPA", fontSize = fontSizeButton, color = Color.Black)
+                Text(
+                    text = "Calculate GPA",
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
 
-            if (showError) {
+            // Display general validation error message
+            validationError?.let { error ->
                 Text(
-                    text = "Please enter valid credits for all courses.",
-                    color = Color.Red,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(top = 4.dp)
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = dimensions.paddingSmall)
                 )
             }
 
             if (showResult) {
-                Spacer(modifier = Modifier.height(paddingVertical))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
+                
                 Text(
                     text = "Your GPA is: ${"%.2f".format(gpa)}",
-                    fontSize = 16.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = dimensions.paddingSmall)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingSmall))
+                
                 LinearProgressIndicator(
                     progress = { (gpa / 10).toFloat() },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp),
+                        .height(8.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(paddingVertical))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                 Button(
                     onClick = {
                         courses = List(3) { Course() }
                         gpa = 0.0
                         showResult = false
-                        showError = false
+                        validationError = null
+                        courseValidationErrors = emptyMap()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensions.minTouchTarget)
                 ) {
-                    Text("Reset", fontSize = fontSizeButton, color = Color.Black)
+                    Text(
+                        text = "Reset",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }

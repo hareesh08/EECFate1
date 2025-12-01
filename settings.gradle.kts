@@ -19,5 +19,14 @@ dependencyResolutionManagement {
     }
 }
 
+// Enable build cache
+buildCache {
+    local {
+        isEnabled = true
+        directory = File(rootDir, ".gradle/build-cache")
+        removeUnusedEntriesAfterDays = 7
+    }
+}
+
 rootProject.name = "EECFate"
 include(":app")

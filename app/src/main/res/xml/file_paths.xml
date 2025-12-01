@@ -5,8 +5,8 @@
         name="external_files"
         path="." />
 
-    <!-- This allows access to the specific folder where your PDF files are stored -->
-    <external-files-path
+    <!-- This allows access to the Downloads directory where PDF files are stored -->
+    <external-path
         name="downloads"
         path="Download/EECFate/" />
 </paths>

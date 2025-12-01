@@ -144,7 +144,7 @@ fun SecondActivityScreen() {
                 .background(Color.White)
         ) {
             WebViewScreen(
-                url = "https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/student/scores/overall",
+                url = "https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/assessment-angular/assessment/student/scores/overall",
                 modifier = Modifier.fillMaxSize()
             )
         }

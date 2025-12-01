@@ -4,5 +4,5 @@ package com.hd.eecfate.process.gpacalc
 data class Course(
     val subject: String = "",
     val credits: Int = 0,
-    val grade: String = ""
+    val grade: String = "O"
 )

@@ -1,6 +1,5 @@
 package com.hd.eecfate.fatereq
 
-import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -35,7 +34,6 @@ fun WebViewScreen(url: String, modifier: Modifier = Modifier) {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
                         // Ensure the page is fully loaded before interacting with JavaScript
-                        Log.d("WebViewScreen", "Page finished loading: $url")
                     }
                 }
 

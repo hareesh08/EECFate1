@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,10 +27,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hd.eecfate.fatereq.AppHeader
+import com.hd.eecfate.ui.theme.LocalDimensions
+import com.hd.eecfate.util.InputValidator
+import com.hd.eecfate.util.ValidationResult
 
 @Composable
 fun CgpaCalculatorScreen() {
@@ -42,21 +44,10 @@ fun CgpaApp() {
     var semesters by remember { mutableStateOf(List(1) { Semester() }) }
     var cgpa by remember { mutableStateOf(0.0) }
     var showResult by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
-    // Get screen width and height to adjust responsiveness
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-
-    // Dynamically adjust text size and padding based on screen width
-    val isSmallScreen = screenWidth < 550.dp // Smaller screen size threshold
-
-    // Adjust font size and paddings based on screen size
-    val fontSizeTitle = if (isSmallScreen) 14.sp else 18.sp
-    val fontSizeButton = if (isSmallScreen) 12.sp else 14.sp
-    val fontSizeResult = if (isSmallScreen) 14.sp else 16.sp
-    val paddingVertical = if (isSmallScreen) 4.dp else 8.dp
-    val paddingHorizontal = if (isSmallScreen) 8.dp else 12.dp
+    // Use LocalDimensions for responsive spacing
+    val dimensions = LocalDimensions.current
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -70,15 +61,15 @@ fun CgpaApp() {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = paddingHorizontal)
+                .padding(horizontal = dimensions.paddingMedium)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = "CGPA Calculator",
-                fontSize = fontSizeTitle,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = paddingVertical)
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = dimensions.paddingMedium)
             )
 
             Box(
@@ -106,58 +97,80 @@ fun CgpaApp() {
                                 }
                             },
                             onDelete = {
-                                semesters = semesters.toMutableList().apply { removeAt(index) }
-                            }
+                                // Ensure minimum 1 semester
+                                if (semesters.size > 1) {
+                                    semesters = semesters.toMutableList().apply { removeAt(index) }
+                                }
+                            },
+                            canDelete = semesters.size > 1
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(paddingVertical))
+            Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
             Button(
                 onClick = { semesters = semesters + Semester() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Semester", fontSize = fontSizeButton, color = Color.Black)
+                Text(
+                    text = "Add Semester",
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
 
-            Spacer(modifier = Modifier.height(paddingVertical))
+            Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
             Button(
                 onClick = {
-                    if (semesters.any { it.credits <= 0 || it.gpa <= 0 }) {
-                        showError = true
+                    // Validate all semesters before calculation
+                    val errors = mutableListOf<String>()
+                    semesters.forEachIndexed { index, semester ->
+                        val validation = InputValidator.validateSemester(semester)
+                        if (validation is ValidationResult.Invalid) {
+                            errors.add("Semester ${index + 1}: ${validation.message}")
+                        }
+                    }
+
+                    if (errors.isNotEmpty()) {
+                        validationError = errors.joinToString("\n")
+                        showResult = false
                     } else {
                         cgpa = calculateCGPA(semesters)
                         showResult = true
-                        showError = false
+                        validationError = null
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Calculate CGPA", fontSize = fontSizeButton, color = Color.Black)
+                Text(
+                    text = "Calculate CGPA",
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
 
-            if (showError) {
+            // Display validation error if present
+            validationError?.let { error ->
+                Spacer(modifier = Modifier.height(dimensions.spacingSmall))
                 Text(
-                    text = "Please enter valid GPA and credits for all semesters.",
-                    color = Color.Red,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(top = 4.dp)
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = dimensions.paddingSmall)
                 )
             }
 
             if (showResult) {
-                Spacer(modifier = Modifier.height(paddingVertical))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                 Text(
                     text = "Your CGPA is: ${"%.2f".format(cgpa)}",
-                    fontSize = fontSizeResult,
-                    color = Color.Black,
-                    modifier = Modifier.padding(top = paddingVertical)
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(top = dimensions.paddingMedium)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingSmall))
                 LinearProgressIndicator(
                     progress = { (cgpa / 10).toFloat() },
                     modifier = Modifier
@@ -165,18 +178,21 @@ fun CgpaApp() {
                         .height(4.dp),
                 )
 
-                Spacer(modifier = Modifier.height(paddingVertical))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                 Button(
                     onClick = {
                         semesters = List(1) { Semester() }
                         cgpa = 0.0
                         showResult = false
-                        showError = false
+                        validationError = null
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Reset", fontSize = fontSizeButton, color = Color.Black)
+                    Text(
+                        text = "Reset",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }

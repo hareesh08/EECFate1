@@ -1,78 +1,184 @@
-# Add the generated 'dontwarn' rules to suppress warnings
--dontwarn com.android.org.conscrypt.SSLParametersImpl
--dontwarn com.sun.net.ssl.KeyManager
--dontwarn com.sun.net.ssl.TrustManager
--dontwarn javax.naming.NamingEnumeration
--dontwarn javax.naming.NamingException
--dontwarn javax.naming.directory.Attribute
--dontwarn javax.naming.directory.Attributes
--dontwarn javax.naming.directory.DirContext
--dontwarn javax.naming.directory.InitialDirContext
--dontwarn javax.naming.directory.SearchControls
--dontwarn javax.naming.directory.SearchResult
--dontwarn org.apache.harmony.xnet.provider.jsse.SSLParametersImpl
--dontwarn org.bouncycastle.jsse.BCSSLParameters
--dontwarn org.bouncycastle.jsse.BCSSLSocket
--dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
--dontwarn sun.misc.JavaNetAccess
--dontwarn sun.misc.SharedSecrets
--dontwarn sun.misc.VM
--dontwarn sun.net.util.IPAddressUtil
--dontwarn sun.net.www.http.HttpClient
--dontwarn sun.net.www.http.KeepAliveCache
--dontwarn sun.net.www.protocol.http.Handler
--dontwarn sun.net.www.protocol.http.HttpURLConnection$TunnelState
--dontwarn sun.net.www.protocol.http.HttpURLConnection
--dontwarn sun.net.www.protocol.https.Handler
--dontwarn sun.security.action.GetBooleanAction
--dontwarn sun.security.action.GetIntegerAction
--dontwarn sun.security.action.GetLongAction
--dontwarn sun.security.action.GetPropertyAction
--dontwarn sun.security.action.OpenFileInputStreamAction
--dontwarn sun.security.internal.interfaces.TlsMasterSecret
--dontwarn sun.security.internal.spec.TlsKeyMaterialParameterSpec
--dontwarn sun.security.internal.spec.TlsKeyMaterialSpec
--dontwarn sun.security.internal.spec.TlsPrfParameterSpec
--dontwarn sun.security.internal.spec.TlsRsaPremasterSecretParameterSpec
--dontwarn sun.security.jca.JCAUtil
--dontwarn sun.security.jca.ProviderList
--dontwarn sun.security.jca.Providers
--dontwarn sun.security.pkcs.PKCS8Key
--dontwarn sun.security.provider.certpath.AlgorithmChecker
--dontwarn sun.security.provider.certpath.CertId
--dontwarn sun.security.provider.certpath.OCSP
--dontwarn sun.security.provider.certpath.OCSPResponse$ResponseStatus
--dontwarn sun.security.provider.certpath.OCSPResponse$SingleResponse
--dontwarn sun.security.provider.certpath.OCSPResponse
--dontwarn sun.security.provider.certpath.PKIXExtendedParameters
--dontwarn sun.security.provider.certpath.ResponderId
--dontwarn sun.security.provider.certpath.UntrustedChecker
--dontwarn sun.security.util.AlgorithmDecomposer
--dontwarn sun.security.util.AnchorCertificates
--dontwarn sun.security.util.BitArray
--dontwarn sun.security.util.Cache$CacheVisitor
--dontwarn sun.security.util.Cache
--dontwarn sun.security.util.Debug
--dontwarn sun.security.util.DerInputStream
--dontwarn sun.security.util.DerOutputStream
--dontwarn sun.security.util.DerValue
--dontwarn sun.security.util.DisabledAlgorithmConstraints
--dontwarn sun.security.util.ECUtil
--dontwarn sun.security.util.HostnameChecker
--dontwarn sun.security.util.KeyUtil
--dontwarn sun.security.util.LegacyAlgorithmConstraints
--dontwarn sun.security.util.ObjectIdentifier
--dontwarn sun.security.validator.ValidatorException
--dontwarn sun.security.x509.AlgorithmId
--dontwarn sun.security.x509.CertificateExtensions
--dontwarn sun.security.x509.Extension
--dontwarn sun.security.x509.KeyIdentifier
--dontwarn sun.security.x509.NetscapeCertTypeExtension
--dontwarn sun.security.x509.PKIXExtensions
--dontwarn sun.security.x509.SerialNumber
--dontwarn sun.security.x509.X500Name
--dontwarn sun.security.x509.X509CertImpl
--dontwarn sun.security.x509.X509CertInfo
--dontwarn sun.security.x509.X509Key
--dontwarn sun.util.logging.PlatformLogger$Level
--dontwarn sun.util.logging.PlatformLogger
+# Add project specific ProGuard rules here.
+
+# Keep all classes in your package
+-keep class com.hd.eecfate.** { *; }
+-keepclassmembers class com.hd.eecfate.** { *; }
+
+# Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+}
+
+# Jetpack Compose
+-keep class androidx.compose.** { *; }
+-keepclassmembers class androidx.compose.** { *; }
+-dontwarn androidx.compose.**
+
+# Keep Compose runtime
+-keep class androidx.compose.runtime.** { *; }
+-keep class androidx.compose.ui.** { *; }
+-keep class androidx.compose.foundation.** { *; }
+-keep class androidx.compose.material.** { *; }
+-keep class androidx.compose.material3.** { *; }
+
+# Keep Compose Lambdas
+-keep class * extends androidx.compose.runtime.internal.ComposableLambda { *; }
+-keep class * extends androidx.compose.runtime.internal.ComposableLambdaImpl { *; }
+
+# AndroidX
+-keep class androidx.** { *; }
+-keep interface androidx.** { *; }
+-dontwarn androidx.**
+
+# Lifecycle
+-keep class androidx.lifecycle.** { *; }
+-keepclassmembers class * implements androidx.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-dontwarn javax.annotation.**
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+
+# OkHttp platform used only on JVM and when Conscrypt dependency is available.
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
+
+# Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+-keep class com.google.gson.** { *; }
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+
+# Keep generic signature of Gson classes
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Keep data classes for Gson
+-keep class * {
+    @com.google.gson.annotations.SerializedName *;
+}
+
+# BouncyCastle
+-keep class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**
+-keepnames class org.bouncycastle.** { *; }
+
+# Conscrypt
+-keep class org.conscrypt.** { *; }
+-dontwarn org.conscrypt.**
+
+# OpenJSSE
+-keep class org.openjsse.** { *; }
+-dontwarn org.openjsse.**
+
+# Accompanist
+-keep class com.google.accompanist.** { *; }
+-dontwarn com.google.accompanist.**
+
+# Material Design
+-keep class com.google.android.material.** { *; }
+-dontwarn com.google.android.material.**
+
+# Keep native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep setters in Views so that animations can still work
+-keepclassmembers public class * extends android.view.View {
+    void set*(***);
+    *** get*();
+}
+
+# Keep classes that are referenced on the AndroidManifest
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Application
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+
+# Serialization
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+# Parcelable
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# Enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep source file names and line numbers for better crash reports
+-keepattributes SourceFile,LineNumberTable
+
+# Remove logging in release
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+}
+
+# General optimizations
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-verbose
+
+# Keep annotations
+-keepattributes *Annotation*,Signature,Exception
+
+# R8 full mode - Maximum optimization
+-allowaccessmodification
+-repackageclasses
+-overloadaggressively
+-mergeinterfacesaggressively
+
+# Optimization options
+-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
+
+# Remove debug info
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    public static void checkNotNull(java.lang.Object);
+    public static void checkNotNull(java.lang.Object, java.lang.String);
+    public static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+    public static void checkNotNullParameter(java.lang.Object, java.lang.String);
+    public static void checkExpressionValueIsNotNull(java.lang.Object, java.lang.String);
+    public static void checkNotNullExpressionValue(java.lang.Object, java.lang.String);
+    public static void checkReturnedValueIsNotNull(java.lang.Object, java.lang.String);
+    public static void checkFieldIsNotNull(java.lang.Object, java.lang.String);
+    public static void throwUninitializedPropertyAccessException(java.lang.String);
+}
+
+# Aggressive shrinking
+-dontnote **
+-dontwarn **
+-ignorewarnings

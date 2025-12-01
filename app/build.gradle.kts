@@ -7,12 +7,27 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("D:\\AndroidStudioPro\\Signs\\HarDev1\\HarDev1.jks")
+            storeFile = file("app/keystore/HarDev1.jks")
             storePassword = "HarDev1"
             keyAlias = "HarDev1"
             keyPassword = "HarDev1"
         }
+        create("release") {
+            storeFile = file("app/keystore/HarDev1.jks")
+            storePassword = "HarDev1"
+            keyAlias = "HarDev1"
+            keyPassword = "HarDev1"
+        }
+        splits {
+            abi {
+                isEnable = true
+                reset()
+                include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+                isUniversalApk = true
+            }
+        }
     }
+
     namespace = "com.hd.eecfate"
     compileSdk = 35
 
@@ -25,20 +40,54 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
-        signingConfig = signingConfigs.getByName("debug")
-        applicationIdSuffix = "com.hd.eecfate"
-        versionNameSuffix = "7.0.3"
+
+        // Vector drawables support
+        vectorDrawables.useSupportLibrary = true
+
+        // Exclude unnecessary native libraries
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
+        
+        // Optimize rendering
+        renderscriptTargetApi = 21
+        renderscriptSupportModeEnabled = false
     }
 
     buildTypes {
-        getByName("release") {
+        getByName("debug") {
             isMinifyEnabled = false
             isShrinkResources = false
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
+            
+            // Speed up debug builds
+            isDebuggable = true
+            isJniDebuggable = false
+            isPseudoLocalesEnabled = false
+            isCrunchPngs = false
+        }
+
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Maximum release optimizations
+            isDebuggable = false
+            isJniDebuggable = false
+            renderscriptOptimLevel = 3
+            isCrunchPngs = true
+            
+            // Enable aggressive optimizations
+            ndk {
+                debugSymbolLevel = "NONE"
+            }
         }
     }
 
@@ -49,11 +98,52 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs += listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xjvm-default=all",
+            "-Xbackend-threads=4"
+        )
     }
 
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = false
+        aidl = false
+        renderScript = false
+        resValues = false
+        shaders = false
+    }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "/META-INF/LICENSE*",
+                "/META-INF/NOTICE*",
+                "/META-INF/DEPENDENCIES",
+                "/META-INF/*.kotlin_module",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties"
+            )
+        }
+
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
+    // Optimize dex options
+    dexOptions {
+        preDexLibraries = true
+        maxProcessCount = 4
+        javaMaxHeapSize = "2g"
+    }
+    
+    // Optimize resource processing
+    androidResources {
+        noCompress += listOf("txt", "json")
+        ignoreAssetsPattern = "!.svn:!.git:.*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~"
     }
 }
 
@@ -61,14 +151,13 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom)) // BOM version management for Compose
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    //   implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.compose.foundation:foundation:1.6.0") // For swipe-to-refresh and other utilities
-    implementation("androidx.compose.material3:material3:1.0.0") // Material3 components
+    implementation("androidx.compose.foundation:foundation:1.6.0")
+    implementation("androidx.compose.material3:material3:1.0.0")
     implementation("androidx.compose.material:material:1.4.1")
     implementation("androidx.compose.runtime:runtime:1.6.0")
     implementation("com.google.accompanist:accompanist-pager:0.27.1")
@@ -80,16 +169,14 @@ dependencies {
     implementation("org.openjsse:openjsse:1.1.0")
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material) // Core runtime
+    implementation(libs.material)
 
-    // Testing libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
-    // Debugging libraries
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

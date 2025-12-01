@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 //import com.hd.eecfate.process.GPAApp
@@ -34,6 +35,14 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+/**
+ * EECFate application theme with Material Design 3 support.
+ * Provides responsive dimensions, semantic colors, and consistent styling.
+ *
+ * @param darkTheme Whether to use dark theme colors
+ * @param dynamicColor Whether to use dynamic colors on Android 12+
+ * @param content The composable content to be themed
+ */
 @Composable
 fun EECFateTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -51,11 +60,18 @@ fun EECFateTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    // Calculate responsive dimensions based on screen size
+    val dimensions = rememberDimensions()
+
+    // Provide dimensions through CompositionLocal
+    CompositionLocalProvider(LocalDimensions provides dimensions) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
+    }
 }
 
 @Composable

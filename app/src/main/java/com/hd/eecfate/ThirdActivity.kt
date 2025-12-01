@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -53,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.hd.eecfate.downloads.DownloadListener
 import com.hd.eecfate.ui.theme.EECFateTheme
 import okhttp3.Call
 import okhttp3.Callback
@@ -177,6 +177,9 @@ fun ThirdActivityScreen() {
                         // Enable JavaScript and DOM Storage
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        
+                        // Set up download listener for file downloads
+                        DownloadListener.setDownloadListener(this, context)
 
                         // Set WebViewClient to capture outgoing requests
                         webViewClient = object : WebViewClient() {
@@ -190,20 +193,8 @@ fun ThirdActivityScreen() {
                                 // Capture headers
                                 val headers = request?.requestHeaders
 
-                                // Log the URL and headers to console (Logcat)
-                                if (!url.isNullOrEmpty()) {
-                                    Log.d("WebViewRequest", "Captured Dynamic Request URL: $url")
-                                }
-                                if (!headers.isNullOrEmpty()) {
-                                    Log.d("WebViewRequest", "Captured Request Headers: $headers")
-                                }
-
                                 // Check if it's a dynamic request (example: containing "dhiapiserver")
                                 if (!url.isNullOrEmpty() && url.contains("dhiapiserver/api/university-exam/score")) {
-                                    Log.d(
-                                        "WebViewRequest",
-                                        "Captured Dynamic URL with Headers: $url\nHeaders: $headers"
-                                    )
                                     // Make HTTP request with captured URL and headers
                                     makeHttpRequest(url, headers, context) { responseBody ->
                                         dialogMessage = parseResponse(responseBody)
@@ -217,7 +208,7 @@ fun ThirdActivityScreen() {
                         }
 
                         // Load the target URL
-                        loadUrl("https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/student/scores/universityexam")
+                        loadUrl("https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/assessment-angular/assessment/student/scores/universityexam")
                     }
                 }
             )
@@ -299,8 +290,6 @@ private fun parseResponse(responseBody: String): String {
         val gson = Gson()
         val type = object : TypeToken<Map<String, Any>>() {}.type
         val parsedResponse: Map<String, Any> = gson.fromJson(responseBody, type)
-
-        // Format the parsed response into a readable string
         formatResponse(parsedResponse)
     } catch (e: Exception) {
         "Error parsing response: ${e.message}"

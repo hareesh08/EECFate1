@@ -44,6 +44,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.hd.eecfate.downloads.DownloadListener
 import com.hd.eecfate.fatereq.AppHeader
 import com.hd.eecfate.ui.theme.EECFateTheme
 import okhttp3.Call
@@ -122,6 +123,9 @@ fun SemesterMarkViewScreen() {
 
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        
+                        // Set up download listener for file downloads
+                        DownloadListener.setDownloadListener(this, context)
 
                         webViewClient = object : WebViewClient() {
                             override fun shouldInterceptRequest(
@@ -143,9 +147,7 @@ fun SemesterMarkViewScreen() {
                                 return super.shouldInterceptRequest(view, request)
                             }
                         }
-                        Toast.makeText(context, "Downloads Not Available", Toast.LENGTH_SHORT)
-                            .show()
-                        Toast.makeText(context, "Try In HomePage", Toast.LENGTH_SHORT).show()
+                        
                         loadUrl("https://srmgroup.dhi-edu.com/srmgroup_srmeec/#/student/scores/universityexam")
                     }
                 }

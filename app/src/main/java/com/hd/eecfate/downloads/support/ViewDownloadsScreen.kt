@@ -3,63 +3,49 @@ package com.hd.eecfate.downloads.support
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import com.hd.eecfate.fatereq.AppHeader
+import com.hd.eecfate.ui.components.ConfirmationDialog
+import com.hd.eecfate.ui.components.EmptyState
+import com.hd.eecfate.ui.theme.LocalDimensions
 import java.io.File
 
 @Composable
 fun ViewDownloadsScreen(context: Context) {
+    var refreshTrigger by remember { mutableStateOf(0) }
+    
     if (isAndroid11OrAbove()) {
         if (!hasManageExternalStoragePermission(context)) {
             requestManageExternalStoragePermission(context)
         } else {
-            val files = getFilesInDirectory(context)
-            DisplayFiles(files, context)
+            val files = remember(refreshTrigger) { getFilesInDirectory(context) }
+            DisplayFiles(files, context) { refreshTrigger++ }
         }
     } else {
         if (ContextCompat.checkSelfPermission(
@@ -81,16 +67,26 @@ fun ViewDownloadsScreen(context: Context) {
                 1
             )
         } else {
-            val files = getFilesInDirectory(context)
-            DisplayFiles(files, context)
+            val files = remember(refreshTrigger) { getFilesInDirectory(context) }
+            DisplayFiles(files, context) { refreshTrigger++ }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisplayFiles(files: List<File>, context: Context) {
-    val fileList = remember { mutableStateOf(files) }
+fun DisplayFiles(files: List<File>, context: Context, onRefresh: () -> Unit = {}) {
+    val dimensions = LocalDimensions.current
+    
+    // State management for file list
+    var fileList by remember { mutableStateOf(files) }
+    
+    // State management for delete confirmation dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var fileToDelete by remember { mutableStateOf<File?>(null) }
+    
+    // State for error messages
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -98,168 +94,110 @@ fun DisplayFiles(files: List<File>, context: Context) {
             TopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.Transparent),
                 title = { AppHeader() },
-                modifier = Modifier.height(52.dp) // Custom height for the app bar
+                modifier = Modifier.height(52.dp)
             )
         }
     ) { paddingValues ->
 
         Column(
             modifier = Modifier
-                .padding(paddingValues) // Applying the default padding from Scaffold
+                .padding(paddingValues)
         ) {
-            // Text that explains the file download instructions
+            // Warning text about file downloads
             Text(
                 text = "Please Download Files From Home Page. Don't use any other",
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 8.sp),
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 0.dp, bottom = 4.dp) // Reduced bottom padding to minimize gap
+                    .padding(
+                        top = 0.dp,
+                        bottom = dimensions.paddingSmall
+                    )
             )
 
-            // Check if the file list is empty and display message accordingly
-            if (fileList.value.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(4.dp), // Reduced padding when no files are found
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "No files found",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
+            // Display empty state or file list
+            if (fileList.isEmpty()) {
+                EmptyState(
+                    message = "No files found",
+                    description = "Download files from the home page to see them here"
+                )
             } else {
-                // LazyColumn for displaying files with no extra padding
+                // LazyColumn for displaying files with responsive spacing
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentPadding = PaddingValues(0.dp),  // Ensured there’s no extra padding
-                    verticalArrangement = Arrangement.spacedBy(2.dp) // Small space between items
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        vertical = dimensions.paddingSmall
+                    )
                 ) {
-                    items(fileList.value.size) { index ->
-                        val file = fileList.value[index]
-                        FileItemView(
+                    items(fileList.size) { index ->
+                        val file = fileList[index]
+                        FileItemCard(
                             file = file,
-                            onClick = { openFile(context, file) },
-                            onDelete = { deleteFile(context, file, fileList) },
-                            onShare = { shareFile(context, file) }
+                            onOpen = { 
+                                when (val result = FileOperationsManager.openFile(context, file)) {
+                                    is Result.Error -> {
+                                        errorMessage = result.message
+                                        Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                    }
+                                    is Result.Success -> { /* File opened successfully */ }
+                                }
+                            },
+                            onShare = { 
+                                when (val result = FileOperationsManager.shareFile(context, file)) {
+                                    is Result.Error -> {
+                                        errorMessage = result.message
+                                        Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                    }
+                                    is Result.Success -> { /* File shared successfully */ }
+                                }
+                            },
+                            onDelete = {
+                                fileToDelete = file
+                                showDeleteDialog = true
+                            }
                         )
                     }
                 }
             }
         }
-    }
-}
 
-
-@Composable
-fun FileItemView(file: File, onClick: () -> Unit, onDelete: () -> Unit, onShare: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)  // Reduced padding around the Card
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(6.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)  // Reduced padding inside the Card
-                .background(Color.White),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Description,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = Color.Gray
+        // Delete confirmation dialog
+        if (showDeleteDialog && fileToDelete != null) {
+            ConfirmationDialog(
+                title = "Delete File",
+                message = "Are you sure you want to delete '${fileToDelete?.name}'? This action cannot be undone.",
+                confirmButtonText = "Delete",
+                dismissButtonText = "Cancel",
+                onConfirm = {
+                    fileToDelete?.let { file ->
+                        when (val result = FileOperationsManager.deleteFile(file)) {
+                            is Result.Success -> {
+                                // Update file list after successful deletion
+                                fileList = fileList.filter { it != file }
+                                Toast.makeText(context, "File deleted successfully", Toast.LENGTH_SHORT).show()
+                                onRefresh()
+                            }
+                            is Result.Error -> {
+                                errorMessage = result.message
+                                Toast.makeText(context, "Failed to delete: ${result.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    showDeleteDialog = false
+                    fileToDelete = null
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                    fileToDelete = null
+                },
+                isDestructive = true
             )
-            Spacer(modifier = Modifier.width(8.dp))  // Reduced spacer width
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = file.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(2.dp))  // Reduced spacer height
-                Text(
-                    text = "Size: ${file.length() / 1024} KB",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(2.dp))  // Reduced spacer height
-                Text(
-                    text = "Last Modified: ${getReadableDate(file.lastModified())}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))  // Reduced spacer width
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.Black
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))  // Reduced spacer width
-                IconButton(onClick = onShare) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share",
-                        tint = Color.Black
-                    )
-                }
-            }
         }
     }
 }
 
-
-fun deleteFile(
-    context: Context,
-    file: File,
-    fileList: MutableState<List<File>>
-) {
-    if (file.exists()) {
-        val deleted = file.delete()
-        if (deleted) {
-            // Remove the file from the list after deletion
-            val updatedList = fileList.value.filter { it != file }
-            // Update the state with the new list
-            fileList.value = updatedList
-            Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show()
-        }
-    }
-}
-
-
-fun shareFile(context: Context, file: File) {
-    val uri = FileProvider.getUriForFile(
-        context,
-        context.applicationContext.packageName + ".provider",
-        file
-    )
-
-    val shareIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        type = "application/pdf"  // Or use "application/*" to be more general
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-
-    val chooser = Intent.createChooser(shareIntent, "Share PDF")
-    ContextCompat.startActivity(context, chooser, null)
-}
 
 
 
